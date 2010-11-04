@@ -11,8 +11,6 @@ import util.{MapWithIndifferentAccess, MultiMapHeadView}
 
 object ScalatraKernel
 {
-  type MultiParams = Map[String, Seq[String]]
-  
   type Action = () => Any
 
   val httpMethods = List("GET", "POST", "PUT", "DELETE")

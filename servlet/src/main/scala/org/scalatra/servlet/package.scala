@@ -1,9 +1,7 @@
-package org
+package org.scalatra
 
-import javax.servlet.http.HttpSession
-
-package object scalatra {
-  /**
+package object servlet {
+   /**
    * Structural type for the various Servlet API objects that have attributes.  These include ServletContext,
    * HttpSession, and ServletRequest.
    */

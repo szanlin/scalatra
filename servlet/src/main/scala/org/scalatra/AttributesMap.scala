@@ -4,6 +4,7 @@ import scala.collection.mutable.Map
 import scala.collection.JavaConversions._
 import java.util.Enumeration
 import util.MutableMapWithIndifferentAccess
+import servlet.Attributes
 
 /**
  * Adapts attributes from the Servlet API to a standard Scala mutable map.
