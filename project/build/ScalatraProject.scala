@@ -13,6 +13,7 @@ class ScalatraProject(info: ProjectInfo)
   val jettyGroupId = "org.mortbay.jetty"
   val jettyVersion = "6.1.22"
   val slf4jVersion = "1.6.0"
+  val ssgiVersion = "0.1.0-SNAPSHOT"
 
   trait UnpublishedProject
     extends BasicManagedProject
@@ -66,12 +67,14 @@ class ScalatraProject(info: ProjectInfo)
 
   lazy val core = project("core", "scalatra", new CoreProject(_))
   class CoreProject(info: ProjectInfo) extends DefaultProject(info) with ScalatraSubProject with TestWithScalatraTest {
+    val ssgi = "org.scalatra.ssgi" %% "ssgi-core" % ssgiVersion
     val mockito = "org.mockito" % "mockito-all" % "1.8.4" % "test"
     val description = "The core Scalatra library"
   }
 
   lazy val servlet = project("servlet", "scalatra-servlet", new ServletProject(_), core)
   class ServletProject(info: ProjectInfo) extends DefaultProject(info) with ScalatraSubProject with TestWithScalatraTest {
+    val ssgi = "org.scalatra.ssgi" %% "ssgi-servlet" % ssgiVersion
     val servletApi = "org.mortbay.jetty" % "servlet-api" % "2.5-20081211" % "provided"
     val description = "Scalatra extensions for the Java Servlet API"
   }
