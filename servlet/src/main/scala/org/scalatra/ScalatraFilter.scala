@@ -3,8 +3,10 @@ package org.scalatra
 import scala.util.DynamicVariable
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import javax.servlet._
+import servlet.ScalatraServletKernel
+import ssgi.servlet.{ServletRequest => SsgiServletRequest}
 
-trait ScalatraFilter extends Filter with ScalatraKernel with Initializable {
+trait ScalatraFilter extends Filter with ScalatraServletKernel {
   import ScalatraKernel._
 
   private val _filterChain = new DynamicVariable[FilterChain](null)
@@ -15,7 +17,7 @@ trait ScalatraFilter extends Filter with ScalatraKernel with Initializable {
     val httpResponse = response.asInstanceOf[HttpServletResponse]
 
     _filterChain.withValue(chain) {
-      handle(httpRequest, httpResponse)
+      handle(new SsgiServletRequest(httpRequest), httpResponse)
     }
   }
 

@@ -7,8 +7,9 @@ import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import org.fusesource.scalate.TemplateEngine
 import org.fusesource.scalate.servlet.{ServletRenderContext, ServletTemplateEngine}
 import java.lang.Throwable
+import servlet.ScalatraServletKernel
 
-trait ScalateSupport extends ScalatraKernel {
+trait ScalateSupport extends ScalatraServletKernel {
   self: {
     def servletContext: ServletContext
   } =>

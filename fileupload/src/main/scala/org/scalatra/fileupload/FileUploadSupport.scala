@@ -1,16 +1,19 @@
-package org.scalatra.fileupload
+package org.scalatra
+package fileupload
 
 import org.scalatra.Handler
 import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.commons.fileupload.{FileItemFactory, FileItem}
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
 import collection.JavaConversions._
-import util.DynamicVariable
+import scala.util.DynamicVariable
 import java.util.{List => JList, HashMap => JHashMap}
 import javax.servlet.http.{HttpServletRequestWrapper, HttpServletRequest, HttpServletResponse}
 
 trait FileUploadSupport extends Handler {
-  abstract override def handle(req: HttpServletRequest, res: HttpServletResponse) {
+  override type Request = ssgi.servlet.ServletRequest
+
+  abstract override def handle(req: Request, res: HttpServletResponse) {
     if (ServletFileUpload.isMultipartContent(req)) {
       val upload = new ServletFileUpload(fileItemFactory)
       val items = upload.parseRequest(req).asInstanceOf[JList[FileItem]]
@@ -32,7 +35,7 @@ trait FileUploadSupport extends Handler {
   }
 
   private def wrapRequest(req: HttpServletRequest, formMap: Map[String, Seq[String]]) =
-    new HttpServletRequestWrapper(req) {
+    new ssgi.servlet.ServletRequest(req) {
       override def getParameter(name: String) = formMap.get(name) map { _.head } getOrElse null
       override def getParameterNames = formMap.keysIterator
       override def getParameterValues(name: String) = formMap.get(name) map { _.toArray } getOrElse null

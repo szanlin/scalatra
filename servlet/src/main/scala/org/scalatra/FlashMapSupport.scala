@@ -10,7 +10,9 @@ object FlashMapSupport {
 trait FlashMapSupport extends Handler {
   import FlashMapSupport.sessionKey
 
-  abstract override def handle(req: HttpServletRequest, res: HttpServletResponse) {
+  type Request <: ssgi.servlet.ServletRequest
+
+  abstract override def handle(req: Request, res: HttpServletResponse) {
     _flash.withValue(getFlash(req)) {
       super.handle(req, res)
       flash.sweep()
@@ -18,7 +20,7 @@ trait FlashMapSupport extends Handler {
     }
   }
 
-  private def getFlash(req: HttpServletRequest) =
+  private def getFlash(req: Request) =
     req.getSession.getAttribute(sessionKey) match {
       case flashMap: FlashMap => flashMap
       case _ => FlashMap()

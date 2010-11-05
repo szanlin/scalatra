@@ -7,15 +7,17 @@ import scala.util.matching.Regex
 import scala.collection.mutable.HashSet
 import scala.collection.JavaConversions._
 import scala.xml.NodeSeq
+import servlet.ScalatraServletKernel
+import ssgi.servlet.{ServletRequest => SsgiServletRequest}
 
 abstract class ScalatraServlet 
   extends HttpServlet 
-  with ScalatraKernel 
-  with Initializable
+  with ScalatraServletKernel
 {
   import ScalatraKernel._
 
-  override def service(request: HttpServletRequest, response: HttpServletResponse) = handle(request, response)
+  override def service(request: HttpServletRequest, response: HttpServletResponse) =
+    handle(new SsgiServletRequest(request), response)
 
   // pathInfo is for path-mapped servlets (i.e., the mapping ends in "/*").  Path-mapped Scalatra servlets will work even
   // if the servlet is not mapped to the context root.  Routes should contain everything matched by the "/*".

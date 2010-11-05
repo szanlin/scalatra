@@ -24,6 +24,8 @@ import ScalatraKernel._
 
 trait ScalatraKernel extends Handler with Initializable
 {
+  type Request <: ssgi.Request
+
   protected val Routes = MMap(httpMethods map (_ -> List[Route]()): _*)
 
   protected def contentType = response.getContentType
@@ -31,9 +33,8 @@ trait ScalatraKernel extends Handler with Initializable
 
   protected val defaultCharacterEncoding = "UTF-8"
   private val _response   = new DynamicVariable[HttpServletResponse](null)
-  private val _request    = new DynamicVariable[HttpServletRequest](null)
+  private val _request = new DynamicVariable[Request](null.asInstanceOf[Request])
 
-  protected implicit def requestWrapper(r: HttpServletRequest) = RichRequest(r)
   protected implicit def sessionWrapper(s: HttpSession) = new RichSession(s)
   protected implicit def servletContextWrapper(sc: ServletContext) = new RichServletContext(sc)
 
@@ -82,14 +83,8 @@ trait ScalatraKernel extends Handler with Initializable
   protected implicit def booleanBlock2RouteMatcher(matcher: => Boolean): RouteMatcher =
     () => { if (matcher) Some(Map[String, Seq[String]]()) else None }
   
-  def handle(request: HttpServletRequest, response: HttpServletResponse) {
-    // As default, the servlet tries to decode params with ISO_8859-1.
-    // It causes an EOFException if params are actually encoded with the other code (such as UTF-8)
-    if (request.getCharacterEncoding == null)
-      request.setCharacterEncoding(defaultCharacterEncoding)
-
-    val realMultiParams = request.getParameterMap.asInstanceOf[java.util.Map[String,Array[String]]].toMap
-      .transform { (k, v) => v: Seq[String] }
+  def handle(request: Request, response: HttpServletResponse) {
+    val realMultiParams = request.parameterMap
 
     response.setCharacterEncoding(defaultCharacterEncoding)
 
@@ -98,7 +93,7 @@ trait ScalatraKernel extends Handler with Initializable
         _multiParams.withValue(Map() ++ realMultiParams) {
           val result = try {
             beforeFilters foreach { _() }
-            Routes(request.getMethod).toStream.flatMap { _(requestPath) }.headOption.getOrElse(doNotFound())
+            Routes(request.requestMethod.toString.toUpperCase).toStream.flatMap { _(requestPath) }.headOption.getOrElse(doNotFound())
           }
           catch {
             case HaltException(Some(code), Some(msg)) => response.sendError(code, msg)
@@ -173,11 +168,6 @@ trait ScalatraKernel extends Handler with Initializable
   protected def redirect(uri: String) = (_response value) sendRedirect uri
   protected implicit def request = _request value
   protected implicit def response = _response value
-  protected def session = request.getSession
-  protected def sessionOption = request.getSession(false) match {
-    case s: HttpSession => Some(s)
-    case null => None
-  }
   protected def status(code: Int) = (_response value) setStatus code
 
   protected def halt(code: Int, msg: String) = throw new HaltException(Some(code), Some(msg))

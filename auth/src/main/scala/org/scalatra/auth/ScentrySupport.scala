@@ -1,9 +1,10 @@
-package org.scalatra.auth
+package org.scalatra
+package auth
 
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
-import util.DynamicVariable
+import scala.util.DynamicVariable
 import javax.servlet.{FilterConfig, ServletConfig}
-import org.scalatra.{CookieSupport, Initializable, Handler, ScalatraKernel}
+import servlet.ScalatraServletKernel
 
 trait ScentryConfig {
   val login = "/login"
@@ -13,7 +14,7 @@ trait ScentryConfig {
 }
 
 trait ScentrySupport[TypeForUser <: AnyRef] extends Handler with Initializable with CookieSupport {
-  self : ScalatraKernel =>
+  self : ScalatraServletKernel =>
 
   type UserType = TypeForUser
   type ScentryConfiguration <: ScentryConfig
@@ -30,7 +31,7 @@ trait ScentrySupport[TypeForUser <: AnyRef] extends Handler with Initializable w
     readStrategiesFromConfig(config)
   }
 
-  abstract override def handle(servletRequest: HttpServletRequest, servletResponse: HttpServletResponse) = {
+  abstract override def handle(servletRequest: Request, servletResponse: HttpServletResponse) = {
     val app = ScalatraKernelProxy(session, params, uri => redirect(uri), request, response, cookies)
     _scentry.withValue(new Scentry[UserType](app, toSession, fromSession)) {
       configureScentry

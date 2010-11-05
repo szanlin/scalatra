@@ -4,6 +4,7 @@ import collection._
 import java.util.Locale
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse, Cookie => ServletCookie}
 import scala.util.DynamicVariable
+import servlet.ScalatraServletKernel
 import util.RicherString._
 
 case class CookieOptions(
@@ -90,13 +91,13 @@ class SweetCookies(private val reqCookies: Map[String, String], private val resp
 }
 
 trait CookieSupport extends Handler {
-  self: ScalatraKernel =>
+  self: ScalatraServletKernel =>
 
   implicit def cookieOptions: CookieOptions = _cookieOptions.value
 
   protected def cookies = _cookies.value
 
-  abstract override def handle(req: HttpServletRequest, res: HttpServletResponse) {
+  abstract override def handle(req: Request, res: HttpServletResponse) {
     _cookies.withValue(new SweetCookies(req.cookies, res)) {
       _cookieOptions.withValue(CookieOptions(path = req.getContextPath)) {
         super.handle(req, res)

@@ -1,13 +1,14 @@
 package org.scalatra
 
 import java.security.{ MessageDigest, SecureRandom }
+import servlet.ScalatraServletKernel
 
-trait CSRFTokenSupport { self: ScalatraKernel =>
+trait CSRFTokenSupport { self: ScalatraServletKernel =>
 
   private val CSRF_KEY = ScalatraKernel.csrfKey
 
   before {
-    if (request.isWrite && session.get(CSRF_KEY) != params.get(CSRF_KEY))
+    if (!request.requestMethod.isSafe && session.get(CSRF_KEY) != params.get(CSRF_KEY))
       halt(403, "Request tampering detected!")
     prepareCSRFToken
   }

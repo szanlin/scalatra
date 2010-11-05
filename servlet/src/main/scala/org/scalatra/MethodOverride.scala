@@ -3,7 +3,9 @@ package org.scalatra
 import javax.servlet.http.{HttpServletRequestWrapper, HttpServletRequest, HttpServletResponse}
 
 trait MethodOverride extends Handler {
-  abstract override def handle(req: HttpServletRequest, res: HttpServletResponse) {
+  override type Request = ssgi.servlet.ServletRequest
+
+  abstract override def handle(req: Request, res: HttpServletResponse) {
     val req2 = req.getMethod match {
       case "POST" =>
         req.getParameter(paramName) match {
@@ -13,7 +15,7 @@ trait MethodOverride extends Handler {
       case _ =>
         req
     }
-    super.handle(req2, res)
+    super.handle(new ssgi.servlet.ServletRequest(req2), res)
   }
 
   private val paramName = "_method"
