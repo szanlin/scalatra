@@ -8,13 +8,12 @@ import scala.collection.JavaConversions._
 import scala.xml.NodeSeq
 import collection.mutable.{ListBuffer, HashMap, Map => MMap}
 import util.{MapWithIndifferentAccess, MultiMapHeadView}
+import ssgi._
 
 object ScalatraKernel
 {
   type Action = () => Any
 
-  val httpMethods = List("GET", "POST", "PUT", "DELETE")
-  val writeMethods = "POST" :: "PUT" :: "DELETE" :: Nil
   val csrfKey = "csrfToken"
 
   val EnvironmentKey = "org.scalatra.environment"
@@ -26,7 +25,7 @@ trait ScalatraKernel extends Handler with Initializable
 {
   type Request <: ssgi.Request
 
-  protected val Routes = MMap(httpMethods map (_ -> List[Route]()): _*)
+  protected val Routes = MMap(HttpMethod.methods.toSeq map (_ -> List[Route]()): _*)
 
   protected def contentType = response.getContentType
   protected def contentType_=(value: String): Unit = response.setContentType(value)
@@ -93,7 +92,7 @@ trait ScalatraKernel extends Handler with Initializable
         _multiParams.withValue(Map() ++ realMultiParams) {
           val result = try {
             beforeFilters foreach { _() }
-            Routes(request.requestMethod.toString.toUpperCase).toStream.flatMap { _(requestPath) }.headOption.getOrElse(doNotFound())
+            Routes(request.requestMethod).toStream.flatMap { _(requestPath) }.headOption.getOrElse(doNotFound())
           }
           catch {
             case HaltException(Some(code), Some(msg)) => response.sendError(code, msg)
@@ -178,12 +177,12 @@ trait ScalatraKernel extends Handler with Initializable
   protected def pass() = throw new PassException
   private class PassException extends RuntimeException
 
-  protected def get(routeMatchers: RouteMatcher*)(action: => Any) = addRoute("GET", routeMatchers, action)
-  protected def post(routeMatchers: RouteMatcher*)(action: => Any) = addRoute("POST", routeMatchers, action)
-  protected def put(routeMatchers: RouteMatcher*)(action: => Any) = addRoute("PUT", routeMatchers, action)
-  protected def delete(routeMatchers: RouteMatcher*)(action: => Any) = addRoute("DELETE", routeMatchers, action)
-  private def addRoute(protocol: String, routeMatchers: Iterable[RouteMatcher], action: => Any): Unit =
-    Routes(protocol) = new Route(routeMatchers, () => action) :: Routes(protocol)
+  protected def get(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Get, routeMatchers, action)
+  protected def post(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Post, routeMatchers, action)
+  protected def put(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Put, routeMatchers, action)
+  protected def delete(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Delete, routeMatchers, action)
+  private def addRoute(method: HttpMethod, routeMatchers: Iterable[RouteMatcher], action: => Any) =
+    Routes(method) = new Route(routeMatchers, () => action) :: Routes(method)
 
   private var config: Config = _
   def initialize(config: Config) = this.config = config

@@ -5,6 +5,7 @@ import scala.io.Source
 import javax.servlet.http.HttpServletRequest
 import util.MultiMapHeadView
 import java.util.Locale
+import ssgi.HttpMethod
 
 case class RichRequest(r: HttpServletRequest) extends AttributesMap {
   @deprecated(message = "Use HttpServletRequest.getServerName() instead")
@@ -23,7 +24,7 @@ case class RichRequest(r: HttpServletRequest) extends AttributesMap {
   }
 
   def isAjax: Boolean = r.getHeader("X-Requested-With") != null
-  def isWrite: Boolean = ScalatraKernel.writeMethods.contains(r.getMethod.toUpperCase(Locale.ENGLISH))
+  def isWrite: Boolean = !HttpMethod(r.getMethod).isSafe
 
   def multiCookies: CMap[String, Seq[String]] =
     Option(r.getCookies).getOrElse(Array()).toSeq.
