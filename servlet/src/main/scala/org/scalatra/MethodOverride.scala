@@ -6,7 +6,7 @@ import ssgi.Post
 trait MethodOverride extends Handler {
   override type Request = ssgi.servlet.ServletRequest
 
-  abstract override def handle(req: Request, res: HttpServletResponse) {
+  abstract override def handle(req: Request) = {
     val req2 = req.requestMethod match {
       case Post =>
         req.getParameter(paramName) match {
@@ -16,7 +16,7 @@ trait MethodOverride extends Handler {
       case _ =>
         req
     }
-    super.handle(new ssgi.servlet.ServletRequest(req2), res)
+    super.handle(new ssgi.servlet.ServletRequest(req2))
   }
 
   private val paramName = "_method"

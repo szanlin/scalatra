@@ -13,7 +13,7 @@ import javax.servlet.http.{HttpServletRequestWrapper, HttpServletRequest, HttpSe
 trait FileUploadSupport extends Handler {
   override type Request = ssgi.servlet.ServletRequest
 
-  abstract override def handle(req: Request, res: HttpServletResponse) {
+  abstract override def handle(req: Request) = {
     if (ServletFileUpload.isMultipartContent(req)) {
       val upload = new ServletFileUpload(fileItemFactory)
       val items = upload.parseRequest(req).asInstanceOf[JList[FileItem]]
@@ -25,11 +25,11 @@ trait FileUploadSupport extends Handler {
           (fileMap + ((item.getFieldName, item :: fileMap.getOrElse(item.getFieldName, List[FileItem]()))), formMap)
       }
       _fileMultiParams.withValue(fileMap) {
-        super.handle(wrapRequest(req, formMap), res)
+        super.handle(wrapRequest(req, formMap))
       }
     } else {
       _fileMultiParams.withValue(Map()) {
-        super.handle(req, res)
+        super.handle(req)
       }
     }
   }

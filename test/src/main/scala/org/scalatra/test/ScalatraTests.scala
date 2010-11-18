@@ -43,7 +43,6 @@ trait ScalatraTests {
     }
 
     val res = new HttpTester(Charset.defaultCharset.name)
-
     res.parse(tester.getResponses(req.generate))
     res.setContent(res.getContent match {
       case null => ""

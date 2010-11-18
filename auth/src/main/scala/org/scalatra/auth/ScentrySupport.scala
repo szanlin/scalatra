@@ -31,13 +31,13 @@ trait ScentrySupport[TypeForUser <: AnyRef] extends Handler with Initializable w
     readStrategiesFromConfig(config)
   }
 
-  abstract override def handle(servletRequest: Request, servletResponse: HttpServletResponse) = {
+  abstract override def handle(servletRequest: Request) = {
     val app = ScalatraKernelProxy(session, params, uri => redirect(uri), request, response, cookies)
     _scentry.withValue(new Scentry[UserType](app, toSession, fromSession)) {
       configureScentry
       registerStrategiesFromConfig
       registerAuthStrategies
-      super.handle(servletRequest, servletResponse)
+      super.handle(servletRequest)
     }
   }
 

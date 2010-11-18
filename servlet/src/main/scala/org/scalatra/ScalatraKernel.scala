@@ -24,14 +24,14 @@ import ScalatraKernel._
 trait ScalatraKernel extends Handler with Initializable
 {
   type Request <: ssgi.Request
+  type ResponseBuilder <: ssgi.ResponseBuilder
 
   protected val Routes = MMap(HttpMethod.methods.toSeq map (_ -> List[Route]()): _*)
 
-  protected def contentType = response.getContentType
-  protected def contentType_=(value: String): Unit = response.setContentType(value)
+  protected def contentType = response.contentType
+  protected def contentType_=(value: String): Unit = response.contentType = value
 
-  protected val defaultCharacterEncoding = "UTF-8"
-  private val _response   = new DynamicVariable[HttpServletResponse](null)
+  protected val defaultCharacterEncoding = "utf-8"
   private val _request = new DynamicVariable[Request](null.asInstanceOf[Request])
 
   protected implicit def sessionWrapper(s: HttpSession) = new RichSession(s)
@@ -82,31 +82,29 @@ trait ScalatraKernel extends Handler with Initializable
   protected implicit def booleanBlock2RouteMatcher(matcher: => Boolean): RouteMatcher =
     () => { if (matcher) Some(Map[String, Seq[String]]()) else None }
   
-  def handle(request: Request, response: HttpServletResponse) {
+  def handle(request: Request) = {
     val realMultiParams = request.parameterMap
 
-    response.setCharacterEncoding(defaultCharacterEncoding)
-
     _request.withValue(request) {
-      _response.withValue(response) {
-        _multiParams.withValue(Map() ++ realMultiParams) {
-          val result = try {
-            beforeFilters foreach { _() }
-            Routes(request.requestMethod).toStream.flatMap { _(requestPath) }.headOption.getOrElse(doNotFound())
-          }
-          catch {
-            case HaltException(Some(code), Some(msg)) => response.sendError(code, msg)
-            case HaltException(Some(code), None) => response.sendError(code)
-            case HaltException(None, _) =>
-            case e => handleError(e)
-          }
-          finally {
-            afterFilters foreach { _() }
-          }
-          renderResponse(result)
+      response.characterEncoding = defaultCharacterEncoding
+      _multiParams.withValue(Map() ++ realMultiParams) {
+        val result = try {
+          beforeFilters foreach { _() }
+          Routes(request.requestMethod).toStream.flatMap { _(requestPath) }.headOption.getOrElse(doNotFound())
         }
+        catch {
+          case HaltException(Some(code), Some(msg)) => response.sendError(code, msg)
+          case HaltException(Some(code), None) => response.sendError(code)
+          case HaltException(None, _) =>
+          case e => handleError(e)
+        }
+        finally {
+          afterFilters foreach { _() }
+        }
+        renderResponse(result)
       }
     }
+    response()
   }
   
   protected def requestPath: String
@@ -131,25 +129,29 @@ trait ScalatraKernel extends Handler with Initializable
   protected def caughtThrowable = _caughtThrowable.value
 
   protected def renderResponse(actionResult: Any) {
-    if (contentType == null)
+    if (contentType == null || contentType == "text/plain" || contentType.startsWith("text/plain;"))
       contentType = inferContentType(actionResult)
+    if (!contentType.contains(";"))
+      contentType = contentType + "; charset=" + response.characterEncoding
     renderResponseBody(actionResult)
   }
 
   protected def inferContentType(actionResult: Any): String = actionResult match {
-    case _: NodeSeq => "text/html"
+    case _: NodeSeq => "text/html; charset=" + response.characterEncoding
     case _: Array[Byte] => "application/octet-stream"
-    case _ => "text/plain"
+    case _ => "text/plain; charset=" + response.characterEncoding
   }
 
   protected def renderResponseBody(actionResult: Any) {
     actionResult match {
       case bytes: Array[Byte] =>
-        response.getOutputStream.write(bytes)
+        response.body = bytes
       case _: Unit =>
-      // If an action returns Unit, it assumes responsibility for the response
+        // If an action returns Unit, it assumes responsibility for the response
+        println("UNIT!")
+        response().body.asInstanceOf[Array[Byte]].length
       case x: Any  =>
-        response.getWriter.print(x.toString)
+        response.body = x.toString.getBytes
     }
   }
 
@@ -164,10 +166,10 @@ trait ScalatraKernel extends Handler with Initializable
   }
   protected def params = _params
 
-  protected def redirect(uri: String) = (_response value) sendRedirect uri
+  protected def redirect(uri: String) = response.sendRedirect(uri)
   protected implicit def request = _request value
-  protected implicit def response = _response value
-  protected def status(code: Int) = (_response value) setStatus code
+  protected implicit def response: ResponseBuilder
+  protected def status(code: Int) = response.status = code
 
   protected def halt(code: Int, msg: String) = throw new HaltException(Some(code), Some(msg))
   protected def halt(code: Int) = throw new HaltException(Some(code), None)

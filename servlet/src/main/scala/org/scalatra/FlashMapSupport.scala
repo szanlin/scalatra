@@ -12,11 +12,12 @@ trait FlashMapSupport extends Handler {
 
   type Request <: ssgi.servlet.ServletRequest
 
-  abstract override def handle(req: Request, res: HttpServletResponse) {
+  abstract override def handle(req: Request) = {
     _flash.withValue(getFlash(req)) {
-      super.handle(req, res)
+      val response = super.handle(req)
       flash.sweep()
       req.getSession.setAttribute(sessionKey, flash)
+      response
     }
   }
 

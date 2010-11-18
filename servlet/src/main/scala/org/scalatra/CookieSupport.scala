@@ -97,10 +97,10 @@ trait CookieSupport extends Handler {
 
   protected def cookies = _cookies.value
 
-  abstract override def handle(req: Request, res: HttpServletResponse) {
-    _cookies.withValue(new SweetCookies(req.cookies, res)) {
+  abstract override def handle(req: Request) = {
+    _cookies.withValue(new SweetCookies(req.cookies, response)) {
       _cookieOptions.withValue(CookieOptions(path = req.getContextPath)) {
-        super.handle(req, res)
+        super.handle(req)
       }
     }
   }

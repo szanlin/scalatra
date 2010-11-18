@@ -1,9 +1,10 @@
 package org.scalatra
 
 import javax.servlet.http.{HttpServletRequest, HttpServletResponse}
+import ssgi.{Request => SsgiRequest, Response => SsgiResponse}
 
 trait Handler {
-  type Request <: ssgi.Request
+  type Request <: SsgiRequest
 
-  def handle(req: Request, res: HttpServletResponse): Unit
+  def handle(req: Request): SsgiResponse[_]
 }
