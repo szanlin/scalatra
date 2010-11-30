@@ -1,21 +1,21 @@
 package org.scalatra
 
-import java.security.{ MessageDigest, SecureRandom }
+import java.security.SecureRandom
 import servlet.ScalatraServletKernel
 
 trait CSRFTokenSupport { self: ScalatraServletKernel =>
 
-  private val CSRF_KEY = ScalatraKernel.csrfKey
+  protected def csrfKey = ScalatraKernel.csrfKey
+  protected def csrfToken = session(csrfKey).asInstanceOf[String]
 
   before {
-    if (!request.requestMethod.isSafe && session.get(CSRF_KEY) != params.get(CSRF_KEY))
+    if (!request.requestMethod.isSafe && session.get(csrfKey) != params.get(csrfKey))
       halt(403, "Request tampering detected!")
     prepareCSRFToken
   }
 
   protected def prepareCSRFToken = {
-    val token = generateCSRFToken
-    session(CSRF_KEY) = token
+    session.getOrElseUpdate(csrfKey, generateCSRFToken)
   }
 
   private def hexEncode(bytes: Array[Byte]) =  ((new StringBuilder(bytes.length * 2) /: bytes) { (sb, b) =>
@@ -24,9 +24,8 @@ trait CSRFTokenSupport { self: ScalatraServletKernel =>
   }).toString
 
   protected def generateCSRFToken = {
-    val digest = MessageDigest.getInstance("MD5")
     val tokenVal = new Array[Byte](20)
     (new SecureRandom).nextBytes(tokenVal)
-    hexEncode(digest.digest(tokenVal))
+    hexEncode(tokenVal)
   }
 }

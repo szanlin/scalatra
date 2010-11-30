@@ -7,8 +7,10 @@ import scala.util.matching.Regex
 import scala.collection.JavaConversions._
 import scala.xml.NodeSeq
 import collection.mutable.{ListBuffer, HashMap, Map => MMap}
-import util.{MapWithIndifferentAccess, MultiMapHeadView}
+import util.{MapWithIndifferentAccess, MultiMapHeadView, using}
 import ssgi._
+import io.copy
+import java.io.{ByteArrayOutputStream, File, FileInputStream}
 
 object ScalatraKernel
 {
@@ -146,6 +148,13 @@ trait ScalatraKernel extends Handler with Initializable
     actionResult match {
       case bytes: Array[Byte] =>
         response.body = bytes
+      case file: File =>
+        using(new FileInputStream(file)) {
+          // TODO Servlet implementation of SSGI currently assumes all bodies are bytes... this nonsense is temporary
+          val out = new ByteArrayOutputStream
+          in => copy(in, out)
+          response.body = out.toByteArray
+        }
       case _: Unit =>
         // If an action returns Unit, it assumes responsibility for the response
         println("UNIT!")
@@ -155,7 +164,7 @@ trait ScalatraKernel extends Handler with Initializable
     }
   }
 
-  private val _multiParams = new DynamicVariable[Map[String, Seq[String]]](Map())
+  protected[scalatra] val _multiParams = new DynamicVariable[Map[String, Seq[String]]](Map())
   protected def multiParams: MultiParams = (_multiParams.value).withDefaultValue(Seq.empty)
   /*
    * Assumes that there is never a null or empty value in multiParams.  The servlet container won't put them
@@ -177,13 +186,13 @@ trait ScalatraKernel extends Handler with Initializable
   private case class HaltException(val code: Option[Int], val msg: Option[String]) extends RuntimeException
 
   protected def pass() = throw new PassException
-  private class PassException extends RuntimeException
+  protected[scalatra] class PassException extends RuntimeException
 
   protected def get(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Get, routeMatchers, action)
   protected def post(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Post, routeMatchers, action)
   protected def put(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Put, routeMatchers, action)
   protected def delete(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Delete, routeMatchers, action)
-  private def addRoute(method: HttpMethod, routeMatchers: Iterable[RouteMatcher], action: => Any) =
+  protected[scalatra] def addRoute(method: HttpMethod, routeMatchers: Iterable[RouteMatcher], action: => Any) =
     Routes(method) = new Route(routeMatchers, () => action) :: Routes(method)
 
   private var config: Config = _
