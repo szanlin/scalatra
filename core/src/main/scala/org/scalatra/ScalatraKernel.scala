@@ -43,9 +43,9 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
 {
   protected implicit def map2multimap(map: Map[String, Seq[String]]) = new MultiMap(map)
 
-  protected val Routes: ConcurrentMap[String, List[Route]] = {
-    val map = new ConcurrentHashMap[String, List[Route]]
-    httpMethods foreach { x: String => map += ((x, List[Route]())) }
+  protected val Routes: ConcurrentMap[String, List[ScalatraRoute]] = {
+    val map = new ConcurrentHashMap[String, List[ScalatraRoute]]
+    httpMethods foreach { x: String => map += ((x, List[ScalatraRoute]())) }
     map
   }
   def contentType = response.getContentType
@@ -62,13 +62,37 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
 
   protected implicit def servletContextWrapper(sc: ServletContext) = new RichServletContext(sc)
 
-  protected[scalatra] class Route(val routeMatchers: Iterable[RouteMatcher], val action: Action) {
-    def apply(realPath: String): Option[Any] = RouteMatcher.matchRoute(routeMatchers) flatMap { invokeAction(_) }
+  trait ScalatraRoute {
+    type ResultType <: Any
+    val routeMatchers: Iterable[RouteMatcher]
+    val action: () => ResultType
+    val resultManifest: Manifest[ResultType]
+    var result: ResultType = _
+    def apply(pth: String): Option[ScalatraRoute]
+  }
+  protected[scalatra] class FallbackRoute[T](val action: () => T)(implicit mf: Manifest[T]) extends ScalatraRoute {
+    type ResultType = T
+
+    val resultManifest = mf
+    val routeMatchers = Nil
+    def apply(pth: String) = {
+      result = action.apply()
+      Option(result) map { _ => this }
+    }
+  }
+  protected[scalatra] class Route[T](val routeMatchers: Iterable[RouteMatcher], val action: () => T)(implicit mf: Manifest[T]) extends ScalatraRoute {
+
+    type ResultType = T
+    val resultManifest = mf
+
+    def apply(pth: String) = RouteMatcher.matchRoute(routeMatchers) flatMap { invokeAction(_) }
 
     private def invokeAction(routeParams: MultiParams) =
       _multiParams.withValue(multiParams ++ routeParams) {
         try {
-          Some(action.apply())
+          result = action.apply()
+          println("result: " + result)
+          Option(result) map { _ => this }
         }
         catch {
           case e: PassException => None
@@ -126,8 +150,10 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
         _multiParams.withValue(Map() ++ realMultiParams) {
           val result = try {
             beforeFilters foreach { _() }
-            val res = Routes(effectiveMethod).toStream.flatMap { _(requestPath) }.headOption.getOrElse(doNotFound())
-            renderResponse(res)
+            val routes = Routes(effectiveMethod)
+            println("routes: " + routes)
+            val res  = routes.toStream.flatMap { _.apply(requestPath) }.headOption.getOrElse(doNotFound(requestPath).get)
+            renderResponse(res.result)(res.resultManifest)
           }
           catch {
             case e => renderResponse((renderError orElse internalRenderError).apply(e))
@@ -162,11 +188,9 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
   protected val afterFilters = new ListBuffer[() => Any]
   def after(fun: => Any) = afterFilters += { () => fun }
 
-  protected var doNotFound: Action
-  def notFound(fun: => Any) {
-    doNotFound = {
-      () => fun
-    }
+  protected var doNotFound: FallbackRoute[_ <: Any]
+  def notFound[T: Manifest](fun: => T) {
+    doNotFound = new FallbackRoute(() => fun)
   }
 
   protected def handleError(e: Throwable): Any = {
@@ -184,7 +208,8 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
   private val _caughtThrowable = new DynamicVariable[Throwable](null)
   protected def caughtThrowable = _caughtThrowable.value
 
-  protected def renderResponse(actionResult: Any) {
+  protected def renderResponse[T](actionResult: T)(implicit mf: Manifest[T]) {
+    println("type in response: " + mf.erasure.getName)
     if (contentType == null)
       contentType = inferContentType(actionResult)
     renderResponseBody(actionResult)
@@ -202,7 +227,7 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
   protected def inferContentType(actionResult: Any): String =
     (contentTypeInfer orElse defaultContentTypeInfer).apply(actionResult)
 
-  protected def renderResponseBody(actionResult: Any) {
+  protected def renderResponseBody[T](actionResult: T)(implicit mf: Manifest[T]) {
     actionResult match {
       case bytes: Array[Byte] =>
         response.getOutputStream.write(bytes)
@@ -279,27 +304,27 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
    * }}}
    *
    */
-  def get(routeMatchers: RouteMatcher*)(action: => Any) = addRoute("GET", routeMatchers, action)
+  def get[T: Manifest](routeMatchers: RouteMatcher*)(action: => T) = addRoute("GET", routeMatchers, action)
 
   /**
    * @see [[org.scalatra.ScalatraKernel.get]]
    */
-  def post(routeMatchers: RouteMatcher*)(action: => Any) = addRoute("POST", routeMatchers, action)
+  def post[T: Manifest](routeMatchers: RouteMatcher*)(action: => T) = addRoute("POST", routeMatchers, action)
 
   /**
    * @see [[org.scalatra.ScalatraKernel.get]]
    */
-  def put(routeMatchers: RouteMatcher*)(action: => Any) = addRoute("PUT", routeMatchers, action)
+  def put[T: Manifest](routeMatchers: RouteMatcher*)(action: => T) = addRoute("PUT", routeMatchers, action)
 
   /**
    * @see [[org.scalatra.ScalatraKernel.get]]
    */
-  def delete(routeMatchers: RouteMatcher*)(action: => Any) = addRoute("DELETE", routeMatchers, action)
+  def delete[T: Manifest](routeMatchers: RouteMatcher*)(action: => T) = addRoute("DELETE", routeMatchers, action)
 
   /**
    * @see [[org.scalatra.ScalatraKernel.get]]
    */
-  def options(routeMatchers: RouteMatcher*)(action: => Any) = addRoute("OPTIONS", routeMatchers, action)
+  def options[T: Manifest](routeMatchers: RouteMatcher*)(action: => T) = addRoute("OPTIONS", routeMatchers, action)
 
   /**
    * registers a new route for the given HTTP method, can be overriden so that subtraits can use their own logic
@@ -310,7 +335,7 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
    *
    * @see removeRoute
    */
-  protected[scalatra] def addRoute(verb: String, routeMatchers: Iterable[RouteMatcher], action: => Any): Route = {
+  protected[scalatra] def addRoute[T: Manifest](verb: String, routeMatchers: Iterable[RouteMatcher], action: => T): ScalatraRoute = {
     val route = new Route(routeMatchers, () => action)
     modifyRoutes(verb, route :: _ )
     route
@@ -322,7 +347,7 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
    *
    * @see addRoute
    */
-  protected def removeRoute(verb: String, route: Route) {
+  protected def removeRoute(verb: String, route: ScalatraRoute) {
     modifyRoutes(verb, _ filterNot (_ == route) )
     route
   }
@@ -331,7 +356,7 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
    * since routes is a ConcurrentMap and we avoid locking, we need to retry if there are
    * concurrent modifications, this is abstracted here for removeRoute and addRoute
    */
-  @tailrec private def modifyRoutes(protocol: String, f: (List[Route] => List[Route])) {
+  @tailrec private def modifyRoutes(protocol: String, f: (List[ScalatraRoute] => List[ScalatraRoute])) {
     val oldRoutes = Routes(protocol)
     if (!Routes.replace(protocol, oldRoutes, f(oldRoutes))) {
       modifyRoutes(protocol,f)

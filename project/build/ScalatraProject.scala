@@ -22,7 +22,7 @@ class ScalatraProject(info: ProjectInfo)
 
   trait ScalatraSubproject 
     extends MavenCentralScalaProject
-    with MavenCentralSubproject
+    with MavenCentralProject
     with BasicPackagePaths
   {
     def parent = ScalatraProject.this

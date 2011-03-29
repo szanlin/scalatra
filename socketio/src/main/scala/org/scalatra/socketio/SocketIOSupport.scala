@@ -12,6 +12,7 @@ import com.glines.socketio.server.SocketIOFrame.FrameType
 import java.util.concurrent.{CopyOnWriteArrayList, ConcurrentHashMap}
 import javax.servlet.http.{HttpServletResponse, HttpServletRequest}
 import util.RicherString._
+import collection.mutable.ConcurrentMap
 
 object SocketIOSupport {
   val BUFFER_SIZE_INIT_PARAM = "bufferSize"
@@ -127,7 +128,7 @@ trait SocketIOSupport extends Handler with Initializable {
   import SocketIOSupport._
 
   private var sessionManager: SocketIOSessionManager = null
-  private var transports = new ConcurrentHashMap[String, Transport]
+  private var transports: ConcurrentMap[String, Transport] = new ConcurrentHashMap[String, Transport]
   private var _builder: SocketIOClientBuilder = null
   private var _connections = new CopyOnWriteArrayList[SocketIOClient]
 
@@ -155,14 +156,16 @@ trait SocketIOSupport extends Handler with Initializable {
   }
 
   abstract override def handle(req: HttpServletRequest, res: HttpServletResponse) {
-    val path = req.getPathInfo
-    if(path.isBlank || path == "/") super.handle(req, res)
+    val pth = req.getPathInfo
+    val path = if( pth.isBlank || pth == "/") "" else pth
+
     val parts = (if (path.startsWith("/")) path.substring(1) else path).split("/")
     val transport = transports.get(parts(0))
-    if(transport == null) {
+    println("the transport: " + transport)
+    if(transport.isEmpty) {
       super.handle(req, res)
     } else {
-      transport.handle(req, res, new Transport.InboundFactory {
+      transport.get.handle(req, res, new Transport.InboundFactory {
         def getInbound(p1: HttpServletRequest, p2: Array[String]) = {
           val client = _builder.result { c => _connections.remove(_connections.indexOf(c)) }
           _connections.add(client)
@@ -173,6 +176,7 @@ trait SocketIOSupport extends Handler with Initializable {
         }
       }, sessionManager)
     }
+
   }
 
   get("/socket.io.js") {

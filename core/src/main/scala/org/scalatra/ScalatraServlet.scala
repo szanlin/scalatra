@@ -24,11 +24,11 @@ abstract class ScalatraServlet
   // slash and include everything between the context route and the query string.
   def requestPath = if (request.getPathInfo != null) request.getPathInfo else request.getServletPath
 
-  protected var doNotFound: Action = () => {
+  protected var doNotFound: FallbackRoute[_] = new FallbackRoute(() => {
     // TODO - We should return a 405 if the route matches a different method
     response.setStatus(404)
     response.getWriter println "Requesting %s but only have %s".format(request.getRequestURI, Routes)
-  }
+  })
 
   protected def servletContext: ServletContext = getServletContext
 
@@ -46,4 +46,4 @@ abstract class ScalatraServlet
   override def initialize(config: ServletConfig): Unit = super.initialize(config)
 }
 
-abstract class ScalatraPipelinedServlet extends ScalatraServlet with RenderPipeline with DefaultRendererPipeline
+//abstract class ScalatraPipelinedServlet extends ScalatraServlet with RenderPipeline with DefaultRendererPipeline

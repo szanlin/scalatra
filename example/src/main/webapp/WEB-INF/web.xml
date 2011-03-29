@@ -8,10 +8,10 @@ PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
     <servlet-name>TemplateExample</servlet-name>
     <servlet-class>org.scalatra.TemplateExample</servlet-class>
   </servlet>
-  <servlet>
-    <servlet-name>RenderPipelineExample</servlet-name>
-    <servlet-class>org.scalatra.RenderPipelineExample</servlet-class>
-  </servlet>
+  <!--<servlet>-->
+    <!--<servlet-name>RenderPipelineExample</servlet-name>-->
+    <!--<servlet-class>org.scalatra.RenderPipelineExample</servlet-class>-->
+  <!--</servlet>-->
   <servlet>
     <servlet-name>BasicAuthExample</servlet-name>
     <servlet-class>org.scalatra.BasicAuthExample</servlet-class>
@@ -61,10 +61,10 @@ PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
     </init-param>
   </servlet>
 
-  <servlet-mapping>
-    <servlet-name>RenderPipelineExample</servlet-name>
-    <url-pattern>/pipelined/*</url-pattern>
-  </servlet-mapping>
+  <!--<servlet-mapping>-->
+    <!--<servlet-name>RenderPipelineExample</servlet-name>-->
+    <!--<url-pattern>/pipelined/*</url-pattern>-->
+  <!--</servlet-mapping>-->
   <servlet-mapping>
     <servlet-name>ChatApplication</servlet-name>
     <url-pattern>/socket.io/*</url-pattern>
@@ -97,13 +97,13 @@ PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
     Typically, you would run Scalatra as either a servlet or a filter, but
     not both in the same app.  
   -->
-  <filter>
-    <filter-name>FilterExample</filter-name>
-    <filter-class>org.scalatra.FilterExample</filter-class>
-  </filter>
-  <filter-mapping>
-    <filter-name>FilterExample</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
+  <!--<filter>-->
+    <!--<filter-name>FilterExample</filter-name>-->
+    <!--<filter-class>org.scalatra.FilterExample</filter-class>-->
+  <!--</filter>-->
+  <!--<filter-mapping>-->
+    <!--<filter-name>FilterExample</filter-name>-->
+    <!--<url-pattern>/*</url-pattern>-->
+  <!--</filter-mapping>-->
 
 </web-app>
