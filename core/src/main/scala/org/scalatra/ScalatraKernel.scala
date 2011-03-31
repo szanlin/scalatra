@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap
 import scala.annotation.tailrec
 import util.{MultiMap, MapWithIndifferentAccess, MultiMapHeadView, using}
 import scala.Option._
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 object ScalatraKernel
 {
@@ -67,7 +68,27 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
     val routeMatchers: Iterable[RouteMatcher]
     val action: () => ResultType
     val resultManifest: Manifest[ResultType]
-    var result: ResultType = _
+    private var _result: ResultType = _
+    private var _lock = new ReentrantReadWriteLock
+
+    def result = {
+      _lock.readLock.lock()
+      try {
+        _result
+      } finally {
+        _lock.readLock.unlock()
+      }
+    }
+
+    protected def result_=(res: ResultType) {
+      _lock.writeLock.lock()
+      try {
+        _result = res
+      } finally {
+        _lock.writeLock.unlock()
+      }
+    }
+
     def apply(pth: String): Option[ScalatraRoute]
   }
   protected[scalatra] class FallbackRoute[T](val action: () => T)(implicit mf: Manifest[T]) extends ScalatraRoute {
@@ -76,7 +97,7 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
     val resultManifest = mf
     val routeMatchers = Nil
     def apply(pth: String) = {
-      result = action.apply()
+      result_=(action.apply())
       Option(result) map { _ => this }
     }
   }
@@ -90,7 +111,7 @@ trait ScalatraKernel extends Handler with Initializable //with RenderResponseBod
     private def invokeAction(routeParams: MultiParams) =
       _multiParams.withValue(multiParams ++ routeParams) {
         try {
-          result = action.apply()
+          result_=(action.apply())
           println("result: " + result)
           Option(result) map { _ => this }
         }

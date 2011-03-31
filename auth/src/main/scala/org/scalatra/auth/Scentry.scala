@@ -96,19 +96,21 @@ class Scentry[UserType <: AnyRef](
     case _ => throw new RuntimeException("You need to provide a session deserializer for Scentry")
   }
 
-  def authenticate(names: Symbol*): Unit = {
-    (List[(Symbol, UserType)]() /: strategies) { (acc, stratKv) =>
-      val (nm, strat) = stratKv
-      runCallbacks(_.isValid) { _.beforeAuthenticate }
-      if(acc.isEmpty && strat.isValid && (names.isEmpty || names.contains(nm))) {
-        strat.authenticate() match {
-          case Some(usr)  => (nm, usr) :: acc
-          case _ => acc
-        }
-       } else acc
-    }.headOption foreach { case (stratName, usr) =>
-      runCallbacks() { _.afterAuthenticate(stratName, usr) }
-      user = usr
+  def authenticate(names: Symbol*) = {
+    if (strategies.exists(kv => kv._2.isValid)) {
+      (List[(Symbol, UserType)]() /: strategies) { (acc, stratKv) =>
+        val (nm, strat) = stratKv
+        runCallbacks(_.isValid) { _.beforeAuthenticate }
+        if(acc.isEmpty && strat.isValid && (names.isEmpty || names.contains(nm))) {
+          strat.authenticate() match {
+            case Some(usr)  => (nm, usr) :: acc
+            case _ => acc
+          }
+         } else acc
+      }.headOption foreach { case (stratName, usr) =>
+        runCallbacks() { _.afterAuthenticate(stratName, usr) }
+        user = usr
+      }
     }
   }
 
