@@ -54,6 +54,7 @@ class MeteorChatExample extends ScalatraServlet {
     contentType = "text/html;charset=ISO-8859-1"
     m suspend  -1
     m broadcast (request.getServerName + "__has suspended a connection from " + request.getRemoteAddr)
+    ()
   }
 
   post("/?*") {

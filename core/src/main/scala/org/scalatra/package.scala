@@ -1,6 +1,10 @@
 package org
 
+import javax.servlet.http.HttpServletResponse
+
 package object scalatra {
+  type Result = (HttpServletResponse => Unit)
+
  @deprecated("Use CsrfTokenSupport")
   type CSRFTokenSupport = CsrfTokenSupport
 

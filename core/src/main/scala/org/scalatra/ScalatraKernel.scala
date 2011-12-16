@@ -273,7 +273,7 @@ trait ScalatraKernel extends Handler with CoreDsl with Initializable
    * default implementation varies between servlet and filter.
    */
   protected var doNotFound: Action
-  def notFound(fun: => Any) = doNotFound = { () => fun }
+  def notFound(fun: => Result) = doNotFound = { () => fun }
 
   /**
    * Called if no route matches the current request method, but routes
@@ -413,23 +413,23 @@ trait ScalatraKernel extends Handler with CoreDsl with Initializable
    */
   protected[scalatra] class PassException extends ControlThrowable
 
-  def get(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Get, routeMatchers, action)
+  def get[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Get, routeMatchers, action)
 
-  def post(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Post, routeMatchers, action)
+  def post[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Post, routeMatchers, action)
 
-  def put(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Put, routeMatchers, action)
+  def put[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Put, routeMatchers, action)
 
-  def delete(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Delete, routeMatchers, action)
-
-  /**
-   * @see [[org.scalatra.ScalatraKernel.get]]
-   */
-  def options(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Options, routeMatchers, action)
+  def delete[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Delete, routeMatchers, action)
 
   /**
    * @see [[org.scalatra.ScalatraKernel.get]]
    */
-  def patch(routeMatchers: RouteMatcher*)(action: => Any) = addRoute(Patch, routeMatchers, action)
+  def options[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Options, routeMatchers, action)
+
+  /**
+   * @see [[org.scalatra.ScalatraKernel.get]]
+   */
+  def patch[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Patch, routeMatchers, action)
 
   /**
    * Prepends a new route for the given HTTP method.
@@ -444,7 +444,7 @@ trait ScalatraKernel extends Handler with CoreDsl with Initializable
    *
    * @see org.scalatra.ScalatraKernel#removeRoute
    */
-  protected def addRoute(method: HttpMethod, routeMatchers: Iterable[RouteMatcher], action: => Any): Route = {
+  protected def addRoute(method: HttpMethod, routeMatchers: Iterable[RouteMatcher], action: => Result): Route = {
     val route = Route(routeMatchers, () => action, () => routeBasePath)
     routes.prependRoute(method, route)
     route
@@ -456,7 +456,7 @@ trait ScalatraKernel extends Handler with CoreDsl with Initializable
   protected def routeBasePath: String
 
   @deprecated("Use addRoute(HttpMethod, Iterable[RouteMatcher], =>Any)")
-  protected[scalatra] def addRoute(verb: String, routeMatchers: Iterable[RouteMatcher], action: => Any): Route =
+  protected[scalatra] def addRoute(verb: String, routeMatchers: Iterable[RouteMatcher], action: => Result): Route =
     addRoute(HttpMethod(verb), routeMatchers, action)
 
   /**
@@ -519,4 +519,16 @@ trait ScalatraKernel extends Handler with CoreDsl with Initializable
    * insensitve.
    */
   def isDevelopmentMode = environment.toLowerCase.startsWith("dev")
+
+  implicit def unit2Result(unit: Unit): Result = { res: HttpServletResponse =>   }
+
+  implicit def string2Result(s: String): Result = { res: HttpServletResponse => 
+    if (contentType == null) res.setContentType("text/plain")
+    res.getWriter.write(s)
+  }
+
+  implicit def nodeSeq2Result(ns: NodeSeq): Result = { res: HttpServletResponse => 
+    if (contentType == null) res.setContentType("text/html")
+    res.getWriter.write(ns.toString)
+  }
 }

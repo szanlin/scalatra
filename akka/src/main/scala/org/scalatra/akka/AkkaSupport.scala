@@ -119,32 +119,34 @@ trait AkkaSupport extends ScalatraKernel {
    * }}}
    *
    */
-  def asyncGet(routeMatchers: RouteMatcher*)(block: => Any): Route = addRoute(Get, routeMatchers, Future { block })
+  def asyncGet[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route = addRoute(Get, routeMatchers, Future { block })
 
   /**
    * @see asyncGet
    */
-  def asyncPost(routeMatchers: RouteMatcher*)(block: => Any): Route = addRoute(Post, routeMatchers, Future { block })
+  def asyncPost[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route = addRoute(Post, routeMatchers, Future { block })
 
   /**
    * @see asyncGet
    */
-  def asyncPut(routeMatchers: RouteMatcher*)(block: => Any): Route = addRoute(Put, routeMatchers, Future { block })
+  def asyncPut[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route = addRoute(Put, routeMatchers, Future { block })
 
   /**
    * @see asyncGet
    */
-  def asyncDelete(routeMatchers: RouteMatcher*)(block: => Any): Route = addRoute(Delete, routeMatchers, Future { block })
+  def asyncDelete[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route = addRoute(Delete, routeMatchers, Future { block })
 
   /**
    * @see asyncGet
    */
-  def asyncOptions(routeMatchers: RouteMatcher*)(block: => Any): Route = addRoute(Options, routeMatchers, Future { block })
+  def asyncOptions[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route = addRoute(Options, routeMatchers, Future { block })
 
   /**
    * @see asyncGet
    */
-  def asyncPatch(routeMatchers: RouteMatcher*)(block: => Any): Route = addRoute(Patch, routeMatchers, Future { block })
+  def asyncPatch[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route = addRoute(Patch, routeMatchers, Future { block })
 
-
+  // TODO
+  implicit def future2Result[T <% Result](future: Future[T]): Result = { res: HttpServletResponse => Predef.error("not implemented")
+  } 
 }

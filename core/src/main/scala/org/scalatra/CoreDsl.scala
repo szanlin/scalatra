@@ -127,7 +127,7 @@ trait CoreDsl {
    * Defines a block to run if no matching routes are found, or if all
    * matching routes pass.
    */
-  def notFound(block: => Any): Unit
+  def notFound(block: => Result): Unit
 
   /**
    * Defines a block to run if matching routes are found only for other
@@ -182,32 +182,32 @@ trait CoreDsl {
    * }}}
    *
    */
-  def get(routeMatchers: RouteMatcher*)(block: => Any): Route
+  def get[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
 
   /**
    * @see get
    */
-  def post(routeMatchers: RouteMatcher*)(block: => Any): Route
+  def post[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
 
   /**
    * @see get
    */
-  def put(routeMatchers: RouteMatcher*)(block: => Any): Route
+  def put[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
 
   /**
    * @see get
    */
-  def delete(routeMatchers: RouteMatcher*)(block: => Any): Route
+  def delete[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
 
   /**
    * @see get
    */
-  def options(routeMatchers: RouteMatcher*)(block: => Any): Route
+  def options[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
 
   /**
    * @see patch
    */
-  def patch(routeMatchers: RouteMatcher*)(block: => Any): Route
+  def patch[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
 
   /**
    * Immediately passes execution to the next matching route.
