@@ -182,32 +182,32 @@ trait CoreDsl {
    * }}}
    *
    */
-  def get[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
+  def get(routeMatchers: RouteMatcher*)(block: => Result): Route
 
   /**
    * @see get
    */
-  def post[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
+  def post(routeMatchers: RouteMatcher*)(block: => Result): Route
 
   /**
    * @see get
    */
-  def put[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
+  def put(routeMatchers: RouteMatcher*)(block: => Result): Route
 
   /**
    * @see get
    */
-  def delete[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
+  def delete(routeMatchers: RouteMatcher*)(block: => Result): Route
 
   /**
    * @see get
    */
-  def options[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
+  def options(routeMatchers: RouteMatcher*)(block: => Result): Route
 
   /**
    * @see patch
    */
-  def patch[T <% Result](routeMatchers: RouteMatcher*)(block: => T): Route
+  def patch(routeMatchers: RouteMatcher*)(block: => Result): Route
 
   /**
    * Immediately passes execution to the next matching route.

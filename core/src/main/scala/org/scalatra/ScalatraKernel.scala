@@ -359,6 +359,32 @@ trait ScalatraKernel extends Handler with CoreDsl with Initializable
       response.getWriter.print(x.toString)
   }
 
+  implicit def unit2Result(unit: Unit): Result = { res: HttpServletResponse =>
+  }
+
+  implicit def string2Result(s: String): Result = { res: HttpServletResponse =>
+    if (contentType == null) res.setContentType("text/plain")
+      res.getWriter.write(s)
+  }
+
+  implicit def nodeSeq2Result(ns: NodeSeq): Result = { res: HttpServletResponse => 
+    if (contentType == null) res.setContentType("text/html")
+      res.getWriter.write(ns.toString)
+  }
+
+  implicit def bytes2Result(bytes: Array[Byte]): Result = { res: HttpServletResponse => 
+    if (contentType == null) res.setContentType("application/octet-stream")
+      res.getOutputStream.write(bytes)
+  }
+
+  implicit def file2Result(file: File): Result = { res: HttpServletResponse => 
+    using(new FileInputStream(file)) { in => 
+      zeroCopy(in, response.getOutputStream) 
+    }
+  }
+
+  implicit def thunk2Result[A <% Result](f: () => A): Result = f()
+
   /**
    * The current multiparams.  Multiparams are a result of merging the
    * standard request params (query string or post params) with the route
@@ -413,23 +439,23 @@ trait ScalatraKernel extends Handler with CoreDsl with Initializable
    */
   protected[scalatra] class PassException extends ControlThrowable
 
-  def get[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Get, routeMatchers, action)
+  def get(routeMatchers: RouteMatcher*)(action: => Result) = addRoute(Get, routeMatchers, action)
 
-  def post[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Post, routeMatchers, action)
+  def post(routeMatchers: RouteMatcher*)(action: => Result) = addRoute(Post, routeMatchers, action)
 
-  def put[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Put, routeMatchers, action)
+  def put(routeMatchers: RouteMatcher*)(action: => Result) = addRoute(Put, routeMatchers, action)
 
-  def delete[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Delete, routeMatchers, action)
-
-  /**
-   * @see [[org.scalatra.ScalatraKernel.get]]
-   */
-  def options[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Options, routeMatchers, action)
+  def delete(routeMatchers: RouteMatcher*)(action: => Result) = addRoute(Delete, routeMatchers, action)
 
   /**
    * @see [[org.scalatra.ScalatraKernel.get]]
    */
-  def patch[T <% Result](routeMatchers: RouteMatcher*)(action: => T) = addRoute(Patch, routeMatchers, action)
+  def options(routeMatchers: RouteMatcher*)(action: => Result) = addRoute(Options, routeMatchers, action)
+
+  /**
+   * @see [[org.scalatra.ScalatraKernel.get]]
+   */
+  def patch(routeMatchers: RouteMatcher*)(action: => Result) = addRoute(Patch, routeMatchers, action)
 
   /**
    * Prepends a new route for the given HTTP method.
@@ -520,15 +546,4 @@ trait ScalatraKernel extends Handler with CoreDsl with Initializable
    */
   def isDevelopmentMode = environment.toLowerCase.startsWith("dev")
 
-  implicit def unit2Result(unit: Unit): Result = { res: HttpServletResponse =>   }
-
-  implicit def string2Result(s: String): Result = { res: HttpServletResponse => 
-    if (contentType == null) res.setContentType("text/plain")
-    res.getWriter.write(s)
-  }
-
-  implicit def nodeSeq2Result(ns: NodeSeq): Result = { res: HttpServletResponse => 
-    if (contentType == null) res.setContentType("text/html")
-    res.getWriter.write(ns.toString)
-  }
 }
