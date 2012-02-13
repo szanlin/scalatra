@@ -1,4 +1,5 @@
-package org.scalatra.util
+package org.scalatra
+package util
 
 import scala.collection.immutable.Map
 
@@ -6,7 +7,7 @@ object MultiMap {
   def apply() = new MultiMap
   def apply[SeqType <: Seq[String]](wrapped: Map[String, SeqType]) = new MultiMap(wrapped)
 
-  implicit def map2MultiMap(map: Map[String, Seq[String]]) = new MultiMap(map)
+//  implicit def map2MultiMap(map: Map[String, Seq[String]]) = new MultiMap(map)
 }
 
 class MultiMap(wrapped: Map[String, Seq[String]] = Map.empty) extends Map[String, Seq[String]] {

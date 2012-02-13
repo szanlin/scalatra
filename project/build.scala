@@ -4,6 +4,7 @@ import scala.xml._
 import java.net.URL
 import com.github.siasia.WebPlugin.webSettings
 import posterous.Publish._
+import akka.sbt.AkkaKernelPlugin
 
 object ScalatraBuild extends Build {
   import Dependencies._
@@ -11,14 +12,27 @@ object ScalatraBuild extends Build {
 
   lazy val scalatraSettings = Defaults.defaultSettings ++ Seq(
     organization := "org.scalatra",
-    version := "2.1.0-SNAPSHOT",
-    crossScalaVersions := Seq("2.9.1", "2.9.0-1", "2.9.0", "2.8.2", "2.8.1"),
+    version := "3.0.0-SNAPSHOT",
+    crossScalaVersions := Seq("2.9.1", "2.9.0-1", "2.9.0"),
     scalaVersion <<= (crossScalaVersions) { versions => versions.head },
     scalacOptions ++= Seq("-unchecked", "-deprecation"),
     manifestSetting,
     publishSetting,
-    resolvers += ScalaToolsSnapshots
-  ) ++ mavenCentralFrouFrou
+    resolvers += ScalaToolsSnapshots,
+    ivyXML := <dependencies>
+      <exclude module="log4j" />
+      <exclude module="slf4j-log4j12" />
+      <exclude module="slf4j-api-1.6.0"  />
+      <exclude org="org.jboss.netty" />
+    </dependencies>,
+    testOptions in Test += Tests.Setup( () => System.setProperty("akka.mode", "test") ),
+    testOptions in Test += Tests.Argument(TestFrameworks.Specs2, "console", "junitxml"),
+    testOptions in Test <+= (crossTarget map { ct =>
+      Tests.Setup { () => System.setProperty("specs2.junit.outDir", new File(ct, "specs-reports").getAbsolutePath) }})
+  ) ++ 
+  mavenCentralFrouFrou ++
+  VersionGenPlugin.allSettings ++
+  AkkaKernelPlugin.distSettings
 
   lazy val scalatraProject = Project(
     id = "scalatra-project",
@@ -28,17 +42,27 @@ object ScalatraBuild extends Build {
       Unidoc.unidocExclude := Seq("scalatra-example"),
       (name in Posterous) := "scalatra"
     ),
-    aggregate = Seq(scalatraCore, scalatraAuth, scalatraFileupload,
-      scalatraScalate, scalatraLiftJson, scalatraAntiXml,
-      scalatraTest, scalatraScalatest, scalatraSpecs, scalatraSpecs2,
-      scalatraExample, scalatraAkka, scalatraDocs)
+    aggregate = Seq(scalatraCore)
   )
 
   lazy val scalatraCore = Project(
     id = "scalatra",
     base = file("core"),
     settings = scalatraSettings ++ Seq(
-      libraryDependencies ++= Seq(servletApi, slf4jSimple % "test"),
+      libraryDependencies ++= Seq(
+	akka,
+	guava,
+	juniversalchardet,
+	httpParsers,
+	mimeutil,
+	netty,
+	rl,
+	scalaIoFile,
+	scalacheck,
+	scalazCore,
+	servletApi,
+	slf4jSimple % "test"
+      ),
       description := "The core Scalatra framework"
     )
   ) dependsOn(Seq(scalatraSpecs2, scalatraSpecs, scalatraScalatest) map { _ % "test->compile" } :_*)
@@ -180,8 +204,10 @@ object ScalatraBuild extends Build {
 
     val base64 = "net.iharder" % "base64" % "2.3.8"
 
-    val akka = "se.scalablesolutions.akka" % "akka-actor" % "1.3"
-    val akkaTestkit = "se.scalablesolutions.akka" % "akka-testkit" % "1.3" % "test"
+    val akka = "com.typesafe.akka" % "akka-actor" % "2.0-M4"
+    val akkaTestkit = "com.typesafe.akka" % "akka-testkit" % "2.0-M4" % "test"
+
+    val asyncHttpClient = "com.ning" % "async-http-client" % "1.7.0"
 
     val commonsFileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
     val commonsIo = "commons-io" % "commons-io" % "2.1"
@@ -198,6 +224,10 @@ object ScalatraBuild extends Build {
       "org.clapper" % artifactId % "0.6.6"
     }
 
+    val guava = "com.google.guava" % "guava" % "10.0.1"
+
+    val httpParsers = "io.backchat.http" %% "http-parsers" % "0.3.2-SNAPSHOT"
+
     private def jettyDep(name: String) = "org.eclipse.jetty" % name % "8.1.0.v20120127"
     val testJettyServlet = jettyDep("test-jetty-servlet")
     val jettyWebsocket = jettyDep("jetty-websocket") % "provided"
@@ -205,9 +235,27 @@ object ScalatraBuild extends Build {
 
     val junit = "junit" % "junit" % "4.10"
 
+    val juniversalchardet = 
+      "com.googlecode.juniversalchardet" % "juniversalchardet" % "1.0.3"
+
     val liftJson = "net.liftweb" %% "lift-json" % "2.4"
 
+    val mimeutil = "eu.medsea.mimeutil" % "mime-util" % "2.1.3"
+
     val mockitoAll = "org.mockito" % "mockito-all" % "1.8.5"
+
+    val netty = "io.netty" % "netty" % "3.3.1.Final"
+
+    val parboiledScala = "org.parboiled" % "parboiled-scala" % "1.0.2"
+
+    val rl = "com.mojolly.rl" %% "rl" % "0.2.5-SNAPSHOT"
+
+    val scalacheck = "org.scala-tools.testing" %% "scalacheck" % "1.9" % "test"
+
+    val scalaIoCore =
+      "com.github.scala-incubator.io" %% "scala-io-core" % "0.3.0"
+    val scalaIoFile =
+      "com.github.scala-incubator.io" %% "scala-io-file" % "0.3.0"
 
     def scalate(scalaVersion: String) = {
       val libVersion = scalaVersion match {
@@ -227,6 +275,8 @@ object ScalatraBuild extends Build {
       }
       "org.scalatest" %% "scalatest" % libVersion
     }
+
+    val scalazCore = "org.scalaz" %% "scalaz-core" % "6.0.4"
 
     def specs(scalaVersion: String) = {
       val libVersion = scalaVersion match {

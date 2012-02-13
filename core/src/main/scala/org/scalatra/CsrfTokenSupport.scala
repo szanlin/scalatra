@@ -1,28 +1,5 @@
 package org.scalatra
 
-
-import java.security.SecureRandom
-
-object GenerateId {
-  def apply(): String = {
-    generateCsrfToken()
-  }
-
-  private def hexEncode(bytes: Array[Byte]) =  ((new StringBuilder(bytes.length * 2) /: bytes) { (sb, b) =>
-    if((b.toInt & 0xff) < 0x10) sb.append("0")
-    sb.append(Integer.toString(b.toInt & 0xff, 16))
-  }).toString
-
-  protected def generateCsrfToken() = {
-    val tokenVal = new Array[Byte](20)
-    (new SecureRandom).nextBytes(tokenVal)
-    hexEncode(tokenVal)
-  }
-
-  @deprecated("Use generateCsrfToken()")
-  protected def generateCSRFToken() = generateCsrfToken()
-}
-
 object CsrfTokenSupport {
   val DefaultKey = "org.scalatra.CsrfTokenSupport.key".intern
 }

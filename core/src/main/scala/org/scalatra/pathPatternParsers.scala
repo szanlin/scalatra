@@ -4,7 +4,7 @@ import scala.collection.mutable.{HashMap, ListBuffer}
 import scala.util.matching.Regex
 import scala.util.parsing.combinator.RegexParsers
 import java.util.regex.Pattern.{quote => escape}
-import ScalatraKernel.MultiParams
+import ScalatraApp.MultiParams
 import util.MultiMap
 
 /**

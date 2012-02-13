@@ -1,6 +1,6 @@
 package org.scalatra
 
-import ScalatraKernel.{Action, MultiParams}
+import ScalatraApp.{Action, MultiParams}
 import util.MultiMap
 
 /**
@@ -31,6 +31,17 @@ case class Route(
       } yield routeParams ++ matcherParams
     } map { routeParams => MatchedRoute(action, routeParams) }
   }
+//  def apply(): Option[MatchedRoute] = {
+//    routeParams map (MatchedRoute(action, _))
+//  }
+//
+//  private def initialParams = None.asInstanceOf[Option[MultiParams]]
+//  private def routeParams = (initialParams /: routeMatchers) { (acc, matchRoute) => (acc, matchRoute()) match {
+//    case (None, None) => None
+//    case (None, Some(mm: MultiParams)) => Some(mm)
+//    case (r, None) => r
+//    case (Some(p), Some(mm: MultiParams)) => Some(p ++ mm)
+//  } }
 
   /**
    * The reversible matcher of a route is the first reversible matcher, if
@@ -50,10 +61,10 @@ case class Route(
 object Route {
   def apply(transformers: Seq[RouteTransformer], action: Action): Route =
     apply(transformers, action, () => "")
-  
+
   def apply(transformers: Seq[RouteTransformer], action: Action, contextPath: () => String): Route = {
     val route = Route(action = action, contextPath = contextPath)
-    transformers.foldLeft(route){ (route, transformer) => transformer(route) }
+    transformers.foldRight(route) { _ apply _ }
   }
 
   def appendMatcher(matcher: RouteMatcher): RouteTransformer = { route =>

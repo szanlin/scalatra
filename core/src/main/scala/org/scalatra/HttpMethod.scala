@@ -7,46 +7,54 @@ sealed trait HttpMethod {
    * Flag as to whether the method is "safe", as defined by RFC 2616.
    */
   val isSafe: Boolean
+  val allowsBody: Boolean
 }
 case object Options extends HttpMethod {
   val isSafe = true
+  val allowsBody = false
   override def toString = "OPTIONS"
 }
 case object Get extends HttpMethod {
   val isSafe = true
+  val allowsBody = false
   override def toString = "GET"
 }
 case object Head extends HttpMethod {
   val isSafe = true
+  val allowsBody = false
   override def toString = "HEAD"
 }
 case object Post extends HttpMethod {
   val isSafe = false
+  val allowsBody = true
   override def toString = "POST"
 }
 case object Put extends HttpMethod {
   val isSafe = false
+  val allowsBody = true
   override def toString = "PUT"
 }
 case object Delete extends HttpMethod {
   val isSafe = false
+  val allowsBody = false
   override def toString = "DELETE"
 }
 case object Trace extends HttpMethod {
   val isSafe = true
+  val allowsBody = false
   override def toString = "TRACE"
 }
 case object Connect extends HttpMethod {
   val isSafe = false
+  val allowsBody = false
   override def toString = "CONNECT"
 }
 case object Patch extends HttpMethod {
   val isSafe = false
+  val allowsBody = true
   override def toString = "PATCH"
 }
-case class ExtensionMethod(name: String) extends HttpMethod {
-  val isSafe = false
-}
+case class ExtensionMethod(name: String, isSafe: Boolean = false, allowsBody: Boolean = false) extends HttpMethod
 
 object HttpMethod {
   private val methodMap =
@@ -57,7 +65,7 @@ object HttpMethod {
   /**
    * Maps a String as an HttpMethod.
    *
-   * @param a string representing an HttpMethod
+   * @param name a string representing an HttpMethod
    * @return the matching common HttpMethod, or an instance of `ExtensionMethod`
    * if no method matches
    */

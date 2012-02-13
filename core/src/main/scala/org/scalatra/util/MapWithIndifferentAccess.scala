@@ -1,4 +1,5 @@
-package org.scalatra.util
+package org.scalatra
+package util
 
 import scala.collection.Map
 

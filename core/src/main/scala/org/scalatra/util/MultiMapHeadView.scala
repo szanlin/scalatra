@@ -1,4 +1,5 @@
-package org.scalatra.util
+package org.scalatra
+package util
 
 import scala.collection.immutable.Map
 
@@ -11,4 +12,3 @@ trait MultiMapHeadView[A, B] extends Map[A, B] {
   override def -(key: A) = Map() ++ this - key
   override def +[B1 >: B](kv: (A, B1)) = Map() ++ this + kv
 }
-

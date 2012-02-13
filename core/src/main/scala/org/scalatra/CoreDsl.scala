@@ -1,9 +1,6 @@
 package org.scalatra
 
-import javax.servlet.ServletContext
-import javax.servlet.http.{HttpServletRequest, HttpServletResponse, HttpSession}
-
-import ScalatraKernel.MultiParams
+import ScalatraApp.MultiParams
 
 /**
  * The core DSL of a Scalatra application.
@@ -12,12 +9,12 @@ trait CoreDsl extends Control {
   /**
    * The current servlet context
    */
-  implicit def servletContext: ServletContext
+  implicit def appContext: AppContext
 
   /**
    * The current request
    */
-  implicit def request: HttpServletRequest
+  implicit def request: HttpRequest
 
   /**
    * A map of the current parameters.  The map contains the head of every
@@ -38,49 +35,46 @@ trait CoreDsl extends Control {
   /**
    * The current response.
    */
-  implicit def response: HttpServletResponse
+  implicit def response: HttpResponse
 
   /**
    * Gets the content type of the current response.
    */
-  def contentType: String = response.getContentType
+  def contentType: String = response.contentType
 
   /**
    * Sets the content type of the current response.
    */
   def contentType_=(contentType: String): Unit =
-    response.setContentType(contentType)
-
-  @deprecated("Use status_=(Int) instead") // since 2.1
-  def status(code: Int) = response.setStatus(code)
+    response.contentType = contentType
 
   /**
    * Sets the status code of the current response.
    */
-  def status_=(code: Int): Unit = response.setStatus(code)
+  def status_=(code: ResponseStatus): Unit = response.status = code
 
   /**
    * Gets the status code of the current response.
    */
-  def status: Int = response.getStatus
+  def status: ResponseStatus = response.status
 
   /**
    * Sends a redirect response and immediately halts the current action.
    */
   def redirect(uri: String): Unit = {
-    response.sendRedirect(uri)
+    response.redirect(uri)
     halt()
   }
 
-  /**
-   * The current HTTP session.  Creates a session if none exists.
-   */
-  implicit def session: HttpSession = request.getSession
-
-  /**
-   * The current HTTP session.  If none exists, None is returned.
-   */
-  def sessionOption: Option[HttpSession] = Option(request.getSession(false))
+//  /**
+//   * The current HTTP session.  Creates a session if none exists.
+//   */
+//  implicit def session: HttpSession = request.getSession
+//
+//  /**
+//   * The current HTTP session.  If none exists, None is returned.
+//   */
+//  def sessionOption: Option[HttpSession] = Option(request.getSession(false))
 
   /**
    * Adds a filter to run before the route.  The filter only runs if each
@@ -89,26 +83,12 @@ trait CoreDsl extends Control {
    */
   def before(transformers: RouteTransformer*)(block: => Any): Unit
 
-  @deprecated("Use before() { ... }")
-  final def beforeAll(block: => Any): Unit = before()(block)
-
-  @deprecated("Use before(RouteTransformer*) { ... }")
-  final def beforeSome(transformers: RouteTransformer*)(block: => Any): Unit =
-    before(transformers: _*)(block)
-
   /**
    * Adds a filter to run after the route.  The filter only runs if each
    * routeMatcher returns Some.  If the routeMatchers list is empty, the
    * filter runs for all routes.
    */
   def after(transformers: RouteTransformer*)(block: => Any): Unit
-
-  @deprecated("Use after() { ... }")
-  final def afterAll(block: => Any): Unit = after()(block)
-
-  @deprecated("Use after(RouteTransformer*) { ... }")
-  final def afterSome(transformers: RouteTransformer*)(block: => Any): Unit =
-    before(transformers: _*)(block)
 
   /**
    * Defines a block to run if no matching routes are found, or if all
@@ -141,7 +121,7 @@ trait CoreDsl extends Control {
    * and a block as the action body.  The return value of the block is
    * rendered through the pipeline and sent to the client as the response body.
    *
-   * See [[org.scalatra.ScalatraKernel.renderResponseBody]] for the detailed
+   * See [[org.scalatra.ScalatraApp.renderResponseBody]] for the detailed
    * behaviour and how to handle your response body more explicitly, and see
    * how different return types are handled.
    *
