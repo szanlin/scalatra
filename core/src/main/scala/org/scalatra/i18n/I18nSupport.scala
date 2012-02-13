@@ -1,8 +1,7 @@
-package org.scalatra.i18n
+package org.scalatra
+package i18n
 
 import java.util.Locale
-import org.scalatra.{CookieSupport, ScalatraKernel}
-
 
 object I18nSupport {
   def localeKey = "locale"
@@ -12,7 +11,7 @@ object I18nSupport {
 
 trait I18nSupport {
 
-  this: ScalatraKernel with CookieSupport =>
+  this: ScalatraApp =>
 
   import I18nSupport._
 
@@ -46,9 +45,9 @@ trait I18nSupport {
   private def resolveHttpLocale: Option[Locale] = {
     (params.get(localeKey) match {
       case Some(localeValue) =>
-        cookies.set(localeKey, localeValue)
+        request.cookies.set(localeKey, localeValue)
         Some(localeValue)
-      case _ => cookies.get(localeKey)
+      case _ => request.cookies.get(localeKey)
     }).map(localeFromString(_)) orElse resolveHttpLocaleFromUserAgent
   }
 
@@ -60,8 +59,8 @@ trait I18nSupport {
    */
   private def resolveHttpLocaleFromUserAgent: Option[Locale] = {
 
-    request.getHeader("Accept-Language") match {
-      case s: String => {
+    request.headers.get("Accept-Language") map { s =>
+      {
         val locales = s.split(",").map(s => {
           def splitLanguageCountry(s: String): Locale = {
             val langCountry = s.split("-")
@@ -83,10 +82,8 @@ trait I18nSupport {
         userLocales = locales
         // We assume that all accept-languages are stored in order of quality
         // (so first language is preferred)
-        Some(locales.head)
+        locales.head
       }
-      // Its possible that "Accept-Language" header is not set
-      case _ => None
     }
 
   }
