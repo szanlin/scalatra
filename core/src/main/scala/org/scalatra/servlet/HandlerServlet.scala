@@ -3,12 +3,12 @@ package servlet
 
 import javax.servlet.http.{HttpServlet, HttpServletRequest, HttpServletResponse}
 
-class ApplicationServlet(private var application: ScalatraApplication) 
+class ServiceServlet(private var service: Service) 
   extends HttpServlet
 {
   override def service(request: HttpServletRequest, 
 		       response: HttpServletResponse) {
-    application(request) match {
+    service(request) match {
       case SyncResult(status, headers, body) =>
 	response.setStatus(status)
         headers foreach { case (name, value) =>
