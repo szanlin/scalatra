@@ -179,7 +179,11 @@ import ScalatraKernel._
  * It is typically extended by [[org.scalatra.ScalatraServlet]] or
  * [[org.scalatra.ScalatraFilter]] to create a Scalatra application.
  */
-trait ScalatraKernel extends Handler with CoreDsl with Initializable with ScalatraKernel.Routing
+trait ScalatraKernel extends Service
+  with Handler 
+  with CoreDsl 
+  with Initializable 
+  with ScalatraKernel.Routing
   with servlet.ServletApiImplicits
 {
   /**
@@ -252,21 +256,28 @@ trait ScalatraKernel extends Handler with CoreDsl with Initializable with Scalat
 
   protected[scalatra] def appendAfterFilter(route: Route) { routes.appendAfterFilter(route) }
 
-  def handle(request: HttpServletRequest, response: HttpServletResponse) {
-    // As default, the servlet tries to decode params with ISO_8859-1.
-    // It causes an EOFException if params are actually encoded with the other code (such as UTF-8)
-    if (request.getCharacterEncoding == null)
-      request.setCharacterEncoding(defaultCharacterEncoding)
-
+  def apply(request: HttpServletRequest): Result = {
     val realMultiParams = request.getParameterMap.asInstanceOf[java.util.Map[String,Array[String]]].toMap
       .transform { (k, v) => v: Seq[String] }
+
+    request(MultiParamsKey) = MultiMap(Map() ++ realMultiParams)
+    executeRoutes() // IPC: taken out because I needed the extension point
+
+    ResponseComplete
+  }
+
+  def handle(request: HttpServletRequest, response: HttpServletResponse) {
+    // As default, the servlet tries to decode params with ISO_8859-1.
+    // It causes an EOFException if params are actually encoded with
+    // the other code (such as UTF-8)
+    if (request.getCharacterEncoding == null)
+      request.setCharacterEncoding(defaultCharacterEncoding)
 
     response.setCharacterEncoding(defaultCharacterEncoding)
 
     _request.withValue(request) {
       _response.withValue(response) {
-        request(MultiParamsKey) = MultiMap(Map() ++ realMultiParams)
-        executeRoutes() // IPC: taken out because I needed the extension point
+	apply(request)
       }
     }
   }

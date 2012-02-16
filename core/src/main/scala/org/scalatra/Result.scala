@@ -10,4 +10,6 @@ case class SyncResult(
 
 // TODO AsyncResult
 
+case object ResponseComplete extends Result
+
 case object NoResult extends Result

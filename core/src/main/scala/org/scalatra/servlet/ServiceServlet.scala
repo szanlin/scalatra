@@ -17,6 +17,9 @@ class ServiceServlet(private var service: Service)
         // TODO This is awful.  It's just a POC.
         body foreach { b => response.getOutputStream.write(b) }
       
+      case ResponseComplete =>
+	// The service rendered it for us.
+      
       case NoResult =>
 	response.sendError(HttpServletResponse.SC_NOT_FOUND)
     }
