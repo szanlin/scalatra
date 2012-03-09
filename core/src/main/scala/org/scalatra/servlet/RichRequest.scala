@@ -1,6 +1,8 @@
 package org.scalatra
 package servlet
 
+import http._
+
 import scala.collection.{Map => CMap}
 import scala.collection.immutable.DefaultMap
 import scala.collection.JavaConversions._
@@ -9,6 +11,7 @@ import java.net.URI
 import javax.servlet.http.HttpServletRequest
 import java.io.InputStream
 import util.{MultiMap, MultiMapHeadView}
+import io.backchat.http.ContentType
 
 object RichRequest {
   private val cachedBodyKey = "org.scalatra.RichRequest.cachedBody"
@@ -68,8 +71,8 @@ case class RichRequest(r: HttpServletRequest) extends Request with AttributesMap
     r.setCharacterEncoding(encoding getOrElse null)
   }
   
-  def contentType: Option[String] =
-    Option(r.getContentType)
+  def contentType: Option[ContentType] =
+    Option(r.getContentType) map toContentType
   
   def contentLength: Option[Long] = r.getContentLength match {
     case -1 => None

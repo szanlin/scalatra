@@ -40,7 +40,8 @@ object ScalatraBuild extends Build {
     settings = scalatraSettings ++ Seq(
       libraryDependencies <++= scalaVersion(sv => Seq(
 	servletApi,
-        grizzledSlf4j(sv)
+        grizzledSlf4j(sv),
+	httpParsers
       )),
       description := "The core Scalatra framework"
     )
@@ -209,6 +210,8 @@ object ScalatraBuild extends Build {
       })
       "org.clapper" % artifactId % "0.6.6"
     }
+
+    val httpParsers = "io.backchat.http" %% "http-parsers" % "0.3.2-SNAPSHOT"
 
     private def jettyDep(name: String) = "org.eclipse.jetty" % name % "8.1.0.v20120127"
     val testJettyServlet = jettyDep("test-jetty-servlet")

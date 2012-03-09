@@ -6,6 +6,7 @@ import java.io.{OutputStream, PrintWriter}
 import java.util.concurrent.ConcurrentHashMap
 import collection.JavaConversions._
 import scala.collection.mutable.Map
+import io.backchat.http.ContentType
 
 trait Response extends HttpMessage {
   /**
@@ -15,7 +16,7 @@ trait Response extends HttpMessage {
 
   def headers: Map[String, String]
 
-  def contentType_=(contentType: Option[String])
+  def contentType_=(contentType: Option[ContentType])
 
   def characterEncoding_=(cs: Option[String])
 

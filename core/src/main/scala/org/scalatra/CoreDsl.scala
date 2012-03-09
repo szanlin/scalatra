@@ -2,6 +2,8 @@ package org.scalatra
 
 import scala.util.DynamicVariable
 
+import http._
+
 /**
  * The core Scalatra DSL.
  */
@@ -57,13 +59,13 @@ trait CoreDsl extends Handler with Control {
   /**
    * Gets the content type of the current response.
    */
-  def contentType: String = response.contentType getOrElse null
+  def contentType: String = response.contentType map { _.toString } getOrElse null
 
   /**
    * Sets the content type of the current response.
    */
   def contentType_=(contentType: String): Unit = 
-    response.contentType = Option(contentType)
+    response.contentType = Option(contentType) map toContentType
 
   @deprecated("Use status_=(Int) instead") // since 2.1
   def status(code: Int) = status_=(code)

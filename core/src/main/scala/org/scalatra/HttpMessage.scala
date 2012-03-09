@@ -1,6 +1,7 @@
 package org.scalatra
 
 import scala.collection.Map
+import io.backchat.http.ContentType
 
 trait HttpMessage {
   /**
@@ -12,7 +13,7 @@ trait HttpMessage {
   /**
    * The content of the Content-Type header, or None if absent.
    */
-  def contentType: Option[String]
+  def contentType: Option[ContentType]
 
   /**
    * Returns the name of the character encoding of the body, or None if no

@@ -58,13 +58,13 @@ class ContentTypeTestServlet extends ScalatraServlet {
   }
 
   get("/concurrent/1") {
-    contentType = "1"
+    contentType = "test/1"
     // Wait for second request to complete
     (conductor !! 1)()
   }
 
   get("/concurrent/2") {
-    contentType = "2"
+    contentType = "test/2"
     // Let first request complete
     conductor ! 2
   }
@@ -143,7 +143,7 @@ class ContentTypeTest extends ScalatraFunSuite {
     val futures = for (i <- 1 to 2) yield { doRequest !! i }
     for (future <- futures) {
       val result = future() match {
-        case (i, mediaType) => mediaType should be (Some(i.toString))
+        case (i, mediaType) => mediaType should be (Some("test/%d".format(i)))
       }
     }
   }

@@ -1,10 +1,14 @@
 package org.scalatra
 package servlet
 
+import http._
+
 import java.io.{OutputStream, PrintWriter}
 import javax.servlet.http.{HttpServletResponse, Cookie => ServletCookie}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
+
+import io.backchat.http.ContentType
 
 case class RichResponse(res: HttpServletResponse) extends Response {
   /**
@@ -49,11 +53,11 @@ case class RichResponse(res: HttpServletResponse) extends Response {
     res.setCharacterEncoding(encoding getOrElse null)
   }
   
-  def contentType: Option[String] =
-    Option(res.getContentType)
+  def contentType: Option[ContentType] =
+    Option(res.getContentType) map toContentType
 
-  def contentType_=(contentType: Option[String]) {
-    res.setContentType(contentType getOrElse null) 
+  def contentType_=(contentType: Option[ContentType]) {
+    res.setContentType(contentType map { _.value } getOrElse null) 
   }
   
   def redirect(uri: String) {
