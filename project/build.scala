@@ -28,10 +28,23 @@ object ScalatraBuild extends Build {
       Unidoc.unidocExclude := Seq("scalatra-example"),
       (name in Posterous) := "scalatra"
     ),
-    aggregate = Seq(scalatraCore, scalatraAuth, scalatraFileupload,
-      scalatraScalate, scalatraLiftJson, scalatraAntiXml,
-      scalatraTest, scalatraScalatest, scalatraSpecs, scalatraSpecs2,
-      scalatraExample, scalatraAkka, scalatraDocs, scalatraJetty)
+    aggregate = Seq(
+      scalatraCore, 
+      scalatraAuth, 
+      scalatraFileupload,
+      scalatraScalate, 
+      scalatraLiftJson, 
+      scalatraAntiXml,
+      scalatraTest, 
+      scalatraScalatest, 
+      scalatraSpecs, 
+      scalatraSpecs2,
+      scalatraExample, 
+      scalatraAkka, 
+      scalatraDocs, 
+      scalatraJetty,
+      scalatraNetty
+    )
   )
 
   lazy val scalatraCore = Project(
@@ -45,6 +58,15 @@ object ScalatraBuild extends Build {
       description := "The core Scalatra framework"
     )
   ) dependsOn(Seq(scalatraSpecs2, scalatraSpecs, scalatraScalatest) map { _ % "test->compile" } :_*)
+
+  lazy val scalatraNetty = Project(
+    id = "scalatra-netty",
+    base = file("netty"),
+    settings = scalatraSettings ++ Seq(
+      libraryDependencies ++= Seq(netty),
+      description := "Scalatra bindings for JBoss Netty"
+    )
+  ) dependsOn(scalatraCore % "compile;test->test")
 
   lazy val scalatraAuth = Project(
     id = "scalatra-auth",
@@ -220,6 +242,8 @@ object ScalatraBuild extends Build {
     val liftJson = "net.liftweb" %% "lift-json" % "2.4"
 
     val mockitoAll = "org.mockito" % "mockito-all" % "1.8.5"
+
+    val netty = "io.netty" % "netty" % "3.3.1.Final"
 
     def scalate(scalaVersion: String) = {
       val libVersion = scalaVersion match {

@@ -7,6 +7,7 @@ class RicherString(orig: String) {
   def isNonBlank = !isBlank
   def toOption = nonBlank
   def nonBlank = if (isBlank) None else Some(orig)
+  def blankOption = nonBlank
 //  def urlDecode(charset: Charset =)
 }
 

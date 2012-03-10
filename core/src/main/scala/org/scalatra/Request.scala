@@ -1,10 +1,14 @@
-
 package org.scalatra
 
+import scala.io.Source
 import java.io.{InputStream}
 import util.MultiMap
 import java.net.URI
 import collection.{Map, mutable}
+
+object Request {
+  private val cachedBodyKey = "org.scalatra.Request.cachedBody"
+}
 
 /**
  * A representation of an HTTP request.  Heavily influenced by the Rack
@@ -57,6 +61,8 @@ trait Request extends HttpMessage with mutable.Map[String, AnyRef] {
    */
   def urlScheme: Scheme
 
+  def isSecure: Boolean = urlScheme == Https
+
   /**
    * Returns the length, in bytes, of the body, or None if not known.
    */
@@ -72,8 +78,6 @@ trait Request extends HttpMessage with mutable.Map[String, AnyRef] {
 
 
   def uri: URI
-
-  def isSecure: Boolean
 
   /**
    * The version of the protocol the client used to send the request.
@@ -101,5 +105,15 @@ trait Request extends HttpMessage with mutable.Map[String, AnyRef] {
    * @return the message body as a string according to the request's encoding
    * (defult ISO-8859-1).
    */
-  def body: String
+  def body:String = {
+    cachedBody getOrElse {
+      val encoding = characterEncoding getOrElse "ISO-8859-1"
+      val body = Source.fromInputStream(inputStream, encoding).mkString
+      update(Request.cachedBodyKey, body)
+      body
+    }
+  }
+
+  private def cachedBody: Option[String] =
+    get(Request.cachedBodyKey).asInstanceOf[Option[String]]
 }

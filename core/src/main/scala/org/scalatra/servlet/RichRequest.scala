@@ -10,10 +10,6 @@ import javax.servlet.http.HttpServletRequest
 import java.io.InputStream
 import util.{MultiMap, MultiMapHeadView}
 
-object RichRequest {
-  private val cachedBodyKey = "org.scalatra.RichRequest.cachedBody"
-}
-
 /**
  * Extension methods to a standard HttpServletRequest.
  */
@@ -31,8 +27,6 @@ case class RichRequest(r: HttpServletRequest) extends Request with AttributesMap
     case "http" => Http
     case "https" => Https
   }
-
-  def isSecure = r.isSecure 
 
   def requestMethod = HttpMethod(r.getMethod)
 
@@ -98,29 +92,6 @@ case class RichRequest(r: HttpServletRequest) extends Request with AttributesMap
 
   @deprecated("Use referrer")
   def referer: Option[String] = referrer
-
-  /**
-   * Caches and returns the body of the response.  The method is idempotent
-   * for any given request.  The result is cached in memory regardless of size,
-   * so be careful.  Calling this method consumes the request's input stream.
-   *
-   * @return the message body as a string according to the request's encoding
-   * (defult ISO-8859-1).
-   */
-  def body:String = {
-    cachedBody getOrElse {
-      val encoding = r.getCharacterEncoding
-      val enc = if(encoding == null || encoding.trim.length == 0) {
-        "ISO-8859-1"
-      } else encoding
-      val body = Source.fromInputStream(r.getInputStream, enc).mkString
-      update(cachedBodyKey, body)
-      body
-    }
-  }
-
-  private def cachedBody: Option[String] =
-    get(cachedBodyKey).asInstanceOf[Option[String]]
 
   /**
    * Returns true if the request is an AJAX request
