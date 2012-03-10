@@ -22,7 +22,7 @@ class NettyHttpRequest(
 //        val files: GenSeq[HttpFile],
   val serverProtocol: HttpVersion,
   val inputStream: InputStream)
-    (implicit appContext: ApplicationContext) 
+/*    (implicit appContext: ApplicationContext) */
 extends HashMap[String, AnyRef] with Request {
 
   override lazy val pathInfo = uri.getPath.replaceFirst("^" + scriptName, "")
@@ -75,6 +75,6 @@ extends HashMap[String, AnyRef] with Request {
       ct.split(";").drop(1).headOption
     }
 
-//  protected[scalatra] def newResponse(ctx: ChannelHandlerContext) = new NettyHttpResponse(this, ctx)
+  protected[netty] def newResponse(ctx: ChannelHandlerContext) = new NettyHttpResponse(this, ctx)
 
 }

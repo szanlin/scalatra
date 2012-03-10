@@ -47,6 +47,7 @@ class NettyHttpResponse(request: NettyHttpRequest, connection: ChannelHandlerCon
     new PrintWriter(new OutputStreamWriter(outputStream, characterEncoding getOrElse "UTF-8"))
 
   def end() = {
+    writer.flush()
     if (_ended.compareAndSet(false, true)) {
       headers foreach {
         case (k, v) if k == Names.CONTENT_TYPE => {
