@@ -18,6 +18,11 @@ trait NettyBase extends ScalatraBase {
   override def requestWrapper(req: RequestT) = req
   override def responseWrapper(res: ResponseT) = res
   
+  override def handle(req: RequestT, res: ResponseT) {
+    super.handle(req, res)
+    res.end()
+  }
+
   object DummyApplicationContext extends HashMap[String, AnyRef] with ApplicationContext {
     def resource(path: String) = None
     def initParameters = Map.empty

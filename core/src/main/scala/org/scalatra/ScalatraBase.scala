@@ -88,7 +88,7 @@ trait ScalatraBase extends CoreDsl with DynamicScope with Initializable
       runFilters(routes.afterFilters)
     }
     renderResponse(result)
-    response.end()
+//    response.end()
   }
 
   /**
