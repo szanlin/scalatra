@@ -68,6 +68,5 @@ case class RichResponse(res: HttpServletResponse) extends Response {
 
   def end() = {
     res.flushBuffer()
-    res.getOutputStream.close()
   }
 }
