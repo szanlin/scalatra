@@ -1,12 +1,21 @@
 package org.scalatra
 package servlet
 
+import util.RicherString._
+
 import java.io.{OutputStream, PrintWriter}
-import javax.servlet.http.{HttpServletResponse, Cookie => ServletCookie}
+import javax.servlet.http.{HttpServletResponse, HttpServletResponseWrapper, Cookie => ServletCookie}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
 
-case class RichResponse(res: HttpServletResponse) extends Response {
+object ServletResponse {
+  def apply(response: HttpServletResponse) = new ServletResponse(response)
+}
+
+class ServletResponse(res: HttpServletResponse) 
+  extends HttpServletResponseWrapper(res)
+  with Response 
+{
   /**
    * Note: the servlet API doesn't remember the reason.  If a custom
    * reason was set, it will be returned incorrectly here,
@@ -39,7 +48,16 @@ case class RichResponse(res: HttpServletResponse) extends Response {
   }
 
   def addCookie(cookie: Cookie) {
-    res.addCookie(cookie: ServletCookie)
+    import cookie._
+
+    val sCookie = new ServletCookie(name, value)
+    if (options.domain.isNonBlank) sCookie.setDomain(options.domain)
+    if(options.path.isNonBlank) sCookie.setPath(options.path)
+    sCookie.setMaxAge(options.maxAge)
+    if(options.secure) sCookie.setSecure(options.secure)
+    if(options.comment.isNonBlank) sCookie.setComment(options.comment)
+    sCookie.setHttpOnly(options.httpOnly)
+    addCookie(sCookie)
   }
 
   def characterEncoding: Option[String] =
@@ -69,4 +87,7 @@ case class RichResponse(res: HttpServletResponse) extends Response {
   def end() = {
     res.flushBuffer()
   }
+
+  override def addHeader(name: String, value: String) = 
+    super.addHeader(name, value)
 }

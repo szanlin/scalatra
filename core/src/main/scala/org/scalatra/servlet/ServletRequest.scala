@@ -6,15 +6,24 @@ import scala.collection.immutable.DefaultMap
 import scala.collection.JavaConversions._
 import scala.io.Source
 import java.net.URI
-import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.{HttpServletRequest, HttpServletRequestWrapper}
 import java.io.InputStream
 import util.{MultiMap, MultiMapHeadView}
+
+object ServletRequest {
+  def apply(req: HttpServletRequest) = new ServletRequest(req)
+  private val cachedBodyKey = "org.scalatra.RichRequest.cachedBody"
+}
 
 /**
  * Extension methods to a standard HttpServletRequest.
  */
-case class RichRequest(r: HttpServletRequest) extends Request with AttributesMap {
-  import RichRequest._
+class ServletRequest(r: HttpServletRequest) 
+  extends HttpServletRequestWrapper(r)
+  with Request
+  with AttributesMap
+{
+  import ServletRequest.cachedBodyKey
 
   def serverProtocol = r.getProtocol match {
     case "HTTP/1.1" => Http11
@@ -28,7 +37,9 @@ case class RichRequest(r: HttpServletRequest) extends Request with AttributesMap
     case "https" => Https
   }
 
-  def requestMethod = HttpMethod(r.getMethod)
+  override def isSecure = super.isSecure
+
+  def requestMethod = HttpMethod(getMethod)
 
   // Moved to conform with what similar specs call it
   @deprecated("Use requestMethod") // Since 2.1
@@ -125,4 +136,3 @@ case class RichRequest(r: HttpServletRequest) extends Request with AttributesMap
 
   def inputStream: InputStream = r.getInputStream
 }
-

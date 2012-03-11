@@ -15,18 +15,12 @@ trait ScalatraHandler extends ScalatraBase {
   var doNotFound: Action = () => { status = 404 }
   override def requestPath = request.pathInfo.nonBlank getOrElse { "/" }
 
-  override def requestWrapper(req: RequestT) = req
-  override def responseWrapper(res: ResponseT) = res
-  
   object DummyApplicationContext extends HashMap[String, AnyRef] with ApplicationContext {
     def resource(path: String) = None
     def initParameters = Map.empty
     def contextPath = ""
     def mount(handler: Handler, urlPattern: String, name: String) {}
   }
-
-  override def applicationContextWrapper(context: ApplicationContextT) =
-    DummyApplicationContext
 
   object DummyConfig extends Config {
     def initParameters = scala.collection.immutable.Map.empty
