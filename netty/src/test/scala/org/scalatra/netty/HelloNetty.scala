@@ -8,7 +8,7 @@ import org.jboss.netty.channel.group.DefaultChannelGroup
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory
 
 
-object HelloNetty extends NettyBase {
+object HelloNetty extends ScalatraHandler {
   get("/hello/:netty") {
     params("netty")
   }

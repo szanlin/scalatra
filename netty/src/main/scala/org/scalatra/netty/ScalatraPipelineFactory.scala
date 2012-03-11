@@ -6,7 +6,7 @@ import org.jboss.netty.handler.codec.http2._
 import org.jboss.netty.handler.ssl.SslHandler
 
 
-class ScalatraPipelineFactory(handler: NettyBase) extends ChannelPipelineFactory {
+class ScalatraPipelineFactory(handler: ScalatraHandler) extends ChannelPipelineFactory {
 
 //  private lazy val applicationHandler = new ScalatraApplicationHandler
 

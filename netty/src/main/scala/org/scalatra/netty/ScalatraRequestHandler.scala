@@ -8,7 +8,7 @@ import org.jboss.netty.handler.codec.http2.{HttpVersion => JHttpVersion, HttpRes
 /**
  * This handler is akin to the handle method of scalatra
  */
-class ScalatraRequestHandler(handler: NettyBase) extends ScalatraUpstreamHandler {
+class ScalatraRequestHandler(handler: ScalatraHandler) extends ScalatraUpstreamHandler {
 
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     e.getMessage match {
