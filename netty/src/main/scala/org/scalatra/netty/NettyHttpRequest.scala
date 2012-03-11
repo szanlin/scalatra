@@ -3,12 +3,12 @@ package netty
 
 import util.RicherString._
 
-import org.jboss.netty.handler.codec.http.HttpHeaders.Names
+import org.jboss.netty.handler.codec.http2.HttpHeaders.Names
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 import org.jboss.netty.channel.ChannelHandlerContext
-import org.jboss.netty.handler.codec.http.CookieDecoder
-import org.jboss.netty.handler.codec.http.QueryStringDecoder
+import org.jboss.netty.handler.codec.http2.CookieDecoder
+import org.jboss.netty.handler.codec.http2.QueryStringDecoder
 import java.net.URI
 import util.MultiMap
 import java.io.InputStream
@@ -19,7 +19,7 @@ class NettyHttpRequest(
   val headers: Map[String, String],
   val queryString: String,
   postParameters: MultiMap,
-//        val files: GenSeq[HttpFile],
+  val files: Seq[HttpFile],
   val serverProtocol: HttpVersion,
   val inputStream: InputStream)
 /*    (implicit appContext: ApplicationContext) */
@@ -35,7 +35,7 @@ extends HashMap[String, AnyRef] with Request {
   }
 
   override lazy val cookies: scala.collection.Map[String, String] = {
-    val nettyCookies = new CookieDecoder(true).decode(headers.getOrElse(Names.COOKIE, ""))
+    val nettyCookies = new CookieDecoder().decode(headers.getOrElse(Names.COOKIE, ""))
     Map((nettyCookies map { nc => nc.getName -> nc.getValue }).toSeq: _*)
 /*
     val requestCookies =

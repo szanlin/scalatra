@@ -3,7 +3,7 @@ package netty
 
 import scala.io.Codec
 import org.jboss.netty.channel.{ExceptionEvent, ChannelHandlerContext, ChannelFutureListener, SimpleChannelUpstreamHandler}
-import org.jboss.netty.handler.codec.http.{HttpResponseStatus, HttpVersion, DefaultHttpResponse}
+import org.jboss.netty.handler.codec.http2.{HttpResponseStatus, HttpVersion, DefaultHttpResponse}
 import org.jboss.netty.buffer.ChannelBuffers
 import scala.util.control.Exception.ignoring
 import grizzled.slf4j.Logger

@@ -63,7 +63,8 @@ object ScalatraBuild extends Build {
     id = "scalatra-netty",
     base = file("netty"),
     settings = scalatraSettings ++ Seq(
-      libraryDependencies ++= Seq(netty),
+      libraryDependencies ++= Seq(netty, nettyExtension),
+      resolvers += goldenGate,
       description := "Scalatra bindings for JBoss Netty"
     )
   ) dependsOn(scalatraCore % "compile;test->test")
@@ -245,6 +246,8 @@ object ScalatraBuild extends Build {
 
     val netty = "io.netty" % "netty" % "3.3.1.Final"
 
+    val nettyExtension = "NettyExtension" % "NettyExtension" % "1.1.11"
+
     def scalate(scalaVersion: String) = {
       val libVersion = scalaVersion match {
         // 1.5.3-scala_2.8.2 fails on 2.8.1 loading
@@ -292,6 +295,7 @@ object ScalatraBuild extends Build {
   object Resolvers {
     val sonatypeNexusSnapshots = "Sonatype Nexus Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     val sonatypeNexusStaging = "Sonatype Nexus Staging" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+    val goldenGate = "GoldenGate" at "http://openr66.free.fr/maven2"
   }
 
   lazy val manifestSetting = packageOptions <+= (name, version, organization) map {

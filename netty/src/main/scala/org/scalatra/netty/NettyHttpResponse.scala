@@ -6,10 +6,10 @@ import util.RicherString._
 import scala.io.Codec
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
-import org.jboss.netty.handler.codec.http.HttpHeaders.Names
+import org.jboss.netty.handler.codec.http2.HttpHeaders.Names
 import org.jboss.netty.channel.{ChannelFutureListener, ChannelHandlerContext}
 import org.jboss.netty.buffer.{ChannelBuffers, ChannelBufferOutputStream}
-import org.jboss.netty.handler.codec.http.{HttpHeaders, DefaultHttpResponse, HttpResponseStatus, HttpVersion => JHttpVersion}
+import org.jboss.netty.handler.codec.http2.{HttpHeaders, DefaultHttpResponse, HttpResponseStatus, HttpVersion => JHttpVersion}
 import java.io.{PrintWriter, OutputStreamWriter}
 import java.nio.charset.Charset
 import java.util.concurrent.atomic.AtomicBoolean

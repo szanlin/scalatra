@@ -3,7 +3,7 @@ package netty
 
 import org.jboss.netty.buffer.ChannelBuffers
 import org.jboss.netty.channel._
-import org.jboss.netty.handler.codec.http.{HttpVersion => JHttpVersion, HttpResponseStatus, DefaultHttpResponse}
+import org.jboss.netty.handler.codec.http2.{HttpVersion => JHttpVersion, HttpResponseStatus, DefaultHttpResponse}
 
 /**
  * This handler is akin to the handle method of scalatra

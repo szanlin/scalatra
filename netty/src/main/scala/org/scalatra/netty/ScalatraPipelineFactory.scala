@@ -2,7 +2,7 @@ package org.scalatra
 package netty
 
 import org.jboss.netty.channel.{Channels, ChannelPipelineFactory}
-import org.jboss.netty.handler.codec.http._
+import org.jboss.netty.handler.codec.http2._
 import org.jboss.netty.handler.ssl.SslHandler
 
 

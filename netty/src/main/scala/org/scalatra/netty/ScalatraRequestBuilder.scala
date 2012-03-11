@@ -7,9 +7,9 @@ import scala.io.Codec
 import org.jboss.netty.channel._
 import util.MultiMap
 import collection.JavaConversions._
-import org.jboss.netty.handler.codec.http.HttpHeaders.Names
-//import org.jboss.netty.handler.codec.http.InterfaceHttpData.HttpDataType
-import org.jboss.netty.handler.codec.http.{HttpChunkTrailer, HttpVersion => JHttpVersion, HttpHeaders, /*FileUpload, Attribute,*/ QueryStringDecoder, HttpChunk, /*DefaultHttpDataFactory, HttpPostRequestDecoder, */HttpRequest => JHttpRequest}
+import org.jboss.netty.handler.codec.http2.HttpHeaders.Names
+import org.jboss.netty.handler.codec.http2.InterfaceHttpData.HttpDataType
+import org.jboss.netty.handler.codec.http2.{HttpChunkTrailer, HttpVersion => JHttpVersion, HttpHeaders, FileUpload, Attribute, QueryStringDecoder, HttpChunk, DefaultHttpDataFactory, HttpPostRequestDecoder, HttpRequest => JHttpRequest}
 import java.net.{SocketAddress, URI}
 import scala.collection.mutable
 import java.io.{FileOutputStream, FileInputStream, File}
@@ -24,7 +24,6 @@ class ScalatraRequestBuilder(maxPostBodySize: Long = 2097152)/*(implicit val app
   
   private val filesToDelete = new mutable.HashSet[File] with mutable.SynchronizedSet[File] 
   
-/*
   private val factory = new DefaultHttpDataFactory()
   private var postDecoder: Option[HttpPostRequestDecoder] = None
 
@@ -32,7 +31,7 @@ class ScalatraRequestBuilder(maxPostBodySize: Long = 2097152)/*(implicit val app
     postDecoder foreach (_.cleanFiles())
     postDecoder = None
   } 
-*/  
+
   private def clearBodyBuffer() {
     (allCatch andFinally {
       filesToDelete.clear()
@@ -41,7 +40,7 @@ class ScalatraRequestBuilder(maxPostBodySize: Long = 2097152)/*(implicit val app
   }
   
   override def channelClosed(ctx: ChannelHandlerContext, e: ChannelStateEvent) {
-//    clearDecoder()
+    clearDecoder()
     clearBodyBuffer()
   }
   
@@ -53,14 +52,13 @@ class ScalatraRequestBuilder(maxPostBodySize: Long = 2097152)/*(implicit val app
   override def messageReceived(ctx: ChannelHandlerContext, e: MessageEvent) {
     e.getMessage match {
       case request: JHttpRequest => {
-//        clearDecoder()
+        clearDecoder()
         this.request = request
         method = HttpMethod(request.getMethod.getName)
         bodyBuffer = None
-/*
+
         if (isHtmlPost)
-          postDecoder = new HttpPostRequestDecoder(factory, request, Codec.UTF8).some
-*/
+          postDecoder = Some(new HttpPostRequestDecoder(factory, request, Codec.UTF8))
         
         if (!request.isChunked) sendOn(e.getChannel, e.getRemoteAddress)
         else {
@@ -69,11 +67,10 @@ class ScalatraRequestBuilder(maxPostBodySize: Long = 2097152)/*(implicit val app
         }
       }
       case chunk: HttpChunk => {
-/*
+
         if (isHtmlPost)
           postDecoder foreach { _ offer chunk }
         else
-*/
           addChunkToBody(chunk)
         
         if (chunk.isLast) {
@@ -150,9 +147,8 @@ class ScalatraRequestBuilder(maxPostBodySize: Long = 2097152)/*(implicit val app
   }
   
   private def scalatraRequest: Request = {
-/*
     if (isHtmlPost) {
-      val (parameters, files) = (postDecoder map readPostData) | (MultiMap(), Seq.empty[HttpFile])
+      val (parameters, files) = (postDecoder map readPostData) getOrElse (MultiMap(), Seq.empty[HttpFile])
       new NettyHttpRequest(
         method,
         URI.create(request.getUri),
@@ -163,17 +159,16 @@ class ScalatraRequestBuilder(maxPostBodySize: Long = 2097152)/*(implicit val app
         serverProtocol,
         new ChannelBufferInputStream(ChannelBuffers.buffer(0)))
     } else {
-*/
       new NettyHttpRequest(
         method,
         URI.create(request.getUri),
         headers,
         queryString,
         MultiMap(),
-//        Seq.empty,
+        Seq.empty,
         serverProtocol,
         inputStream)
-//    }
+    }
   }
   
   private def queryString = new URI(request.getUri).getQuery
@@ -193,7 +188,7 @@ class ScalatraRequestBuilder(maxPostBodySize: Long = 2097152)/*(implicit val app
   }
   
   private def defaultMultiMap = MultiMap().withDefaultValue(Seq.empty)
-/*
+
   private def readPostData(decoder: HttpPostRequestDecoder): (Map[String, Seq[String]], Seq[HttpFile]) = {
     decoder.getBodyHttpDatas.foldLeft((defaultMultiMap, Seq.empty[HttpFile])) { (acc, data) =>
       val (container, files) = acc
@@ -209,5 +204,4 @@ class ScalatraRequestBuilder(maxPostBodySize: Long = 2097152)/*(implicit val app
       }
     }
   }
-*/
 }
