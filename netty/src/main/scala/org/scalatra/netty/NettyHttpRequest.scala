@@ -65,7 +65,7 @@ extends HashMap[String, AnyRef] with Request {
   lazy val serverPort = 
     headers.get(Names.HOST).get.split(":").drop(1).head.toInt
 
-  override val parameters: MultiParams = {
+  override val multiParameters: MultiParams = {
     val queryDecoder = new QueryStringDecoder("?"+uri.getQuery)
     Map() ++ queryDecoder.getParameters.mapValues { _.toSeq } ++ postParameters
   }
