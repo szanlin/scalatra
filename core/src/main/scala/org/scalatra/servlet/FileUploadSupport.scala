@@ -3,7 +3,7 @@ package org.scalatra.servlet
 import scala.collection.JavaConversions._
 import javax.servlet.ServletException
 import javax.servlet.http.{HttpServletRequest, Part}
-import java.util.{HashMap => JHashMap, Map => JMap}
+import java.util.{Collection, HashMap => JHashMap, Map => JMap}
 import org.scalatra.ScalatraBase
 import java.io.File
 
@@ -81,12 +81,6 @@ trait FileUploadSupport extends ServletBase {
         wrapRequest(req, mergedFormParams)
       } else req
     } catch {
-      case e: Exception if isSizeConstraintException(e) => {
-	req.setAttribute(ScalatraBase.PrehandleExceptionKey,
-			 new SizeConstraintExceededException("Too large request and/or file", e))
-	req
-      }
-
       case e: Exception => {
         req.setAttribute(ScalatraBase.PrehandleExceptionKey, e)
         req
@@ -111,7 +105,7 @@ trait FileUploadSupport extends ServletBase {
         bodyParams
 
       case None => {
-        val bodyParams = req.getParts.foldRight(BodyParams(FileMultiParams(), Map.empty)) {
+        val bodyParams = getParts(req).foldRight(BodyParams(FileMultiParams(), Map.empty)) {
           (part, params) =>
             val item = FileItem(part)
 
@@ -133,6 +127,14 @@ trait FileUploadSupport extends ServletBase {
       }
     }
   }
+
+  private def getParts(req: RequestT): Collection[Part] =
+    try {
+      req.getParts
+    } catch {
+      case e: Exception if isSizeConstraintException(e) =>
+        throw new SizeConstraintExceededException("Too large request and/or file", e)
+    }
 
   private def fileItemToString(item: FileItem): String = {
     val charset = item.charset.getOrElse(defaultCharacterEncoding)
