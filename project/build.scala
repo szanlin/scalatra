@@ -3,7 +3,7 @@ import Keys._
 import scala.xml._
 import java.net.URL
 import com.github.siasia.WebPlugin.webSettings
-import posterous.Publish._
+// import posterous.Publish._
 import ls.Plugin.LsKeys
 
 object ScalatraBuild extends Build {
@@ -21,8 +21,8 @@ object ScalatraBuild extends Build {
     publishSetting,
     crossPaths := false,
     resolvers ++= Seq(ScalaToolsSnapshots, sonatypeNexusSnapshots),
-    (LsKeys.tags in LsKeys.lsync) := Seq("web", "sinatra"),
-    (LsKeys.docsUrl in LsKeys.lsync) := Some(new URL("http://www.scalatra.org/%s/book/" format majorVersion))
+    (LsKeys.tags in LsKeys.lsync) := Seq("web", "sinatra")//,
+    // (LsKeys.docsUrl in LsKeys.lsync) := Some(new URL("http://www.scalatra.org/%s/book/" format majorVersion))
   ) ++ jettyOrbitHack ++ mavenCentralFrouFrou
 
   lazy val scalatraProject = Project(
@@ -31,9 +31,9 @@ object ScalatraBuild extends Build {
     settings = scalatraSettings ++ Unidoc.settings ++ doNotPublish ++ Seq(
       description := "A tiny, Sinatra-like web framework for Scala",
       Unidoc.unidocExclude := Seq("scalatra-example"),
-      (name in Posterous) := "scalatra",
+      // (name in Posterous) := "scalatra",
       LsKeys.skipWrite := true
-    ) ++ posterousSettings,
+    ), // ++ posterousSettings,
     aggregate = Seq(scalatraCore, scalatraAuth, scalatraFileupload,
       scalatraScalate, scalatraLiftJson, scalatraAntiXml,
       scalatraTest, scalatraScalatest, scalatraSpecs, scalatraSpecs2,
