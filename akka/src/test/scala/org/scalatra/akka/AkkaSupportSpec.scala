@@ -13,7 +13,7 @@ import test.specs.ScalatraSpecification
 class AkkaSupportServlet extends ScalatraServlet with AkkaSupport {
   val system = ActorSystem()
   override def asyncTimeout = 2 seconds
-  
+
   asyncGet("/working") {
     "the-working-reply"
   }
@@ -32,6 +32,10 @@ class AkkaSupportServlet extends ScalatraServlet with AkkaSupport {
 
   asyncGet("/*.jpg") {
     "jpeg"
+  }
+
+  asyncGet("/uri") {
+    request.getRequestURI
   }
 
   override protected def contentTypeInferrer = ({
@@ -80,6 +84,12 @@ class AkkaSupportSpec extends ScalatraSpecification {
     "infers the content type of the future result" in {
       get("/foo.jpg") {
 	header("Content-Type") must startWith ("image/jpeg")
+      }
+    }
+
+    "see the request in the Future" in {
+      get("/uri") {
+	body must_== "/uri"
       }
     }
   }

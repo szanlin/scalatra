@@ -19,9 +19,18 @@ import javax.servlet.http._
 abstract class ScalatraServlet
   extends HttpServlet
   with ServletBase
-  with Initializable {
+  with Initializable
+  with Cloneable {
+
+  override def request = theRequest
+  private var theRequest: HttpServletRequest = _
+  override def response = theResponse
+  private var theResponse: HttpServletResponse = _
+
   override def service(request: HttpServletRequest, response: HttpServletResponse) {
-    handle(ServletRequest(request), ServletResponse(response))
+    theRequest = request
+    theResponse = response
+    clone().asInstanceOf[ScalatraServlet].handle(ServletRequest(request), ServletResponse(response))
   }
 
   /**
