@@ -20,7 +20,7 @@ object ScalatraBuild extends Build {
     manifestSetting,
     publishSetting,
     crossPaths := false,
-    resolvers ++= Seq(ScalaToolsSnapshots, sonatypeNexusSnapshots),
+    resolvers ++= Seq(sonatypeNexusSnapshots),
     (LsKeys.tags in LsKeys.lsync) := Seq("web", "sinatra")//,
     // (LsKeys.docsUrl in LsKeys.lsync) := Some(new URL("http://www.scalatra.org/%s/book/" format majorVersion))
   ) ++ jettyOrbitHack ++ mavenCentralFrouFrou
@@ -97,6 +97,16 @@ object ScalatraBuild extends Build {
     settings = scalatraSettings ++ Seq(
       libraryDependencies += liftJson,
       description := "Lift JSON support for Scalatra"
+    )
+  ) dependsOn(scalatraCore % "compile;test->test;provided->provided")
+
+  lazy val scalatraNetty = Project(
+    id = "scalatra-netty",
+    base = file("netty"),
+    settings = scalatraSettings ++ Seq(
+      libraryDependencies ++= Seq(netty, nettyExtension),
+      resolvers += goldenGate,
+      description := "Netty backend for Scalatra"
     )
   ) dependsOn(scalatraCore % "compile;test->test;provided->provided")
 
@@ -208,14 +218,14 @@ object ScalatraBuild extends Build {
 
     val backchatRl = "io.backchat.rl" %% "rl" % "0.3.2-SNAPSHOT"
 
-    val akkaActor = "com.typesafe.akka" % "akka-actor" % "2.0.1"
-    val akkaTestkit = "com.typesafe.akka" % "akka-testkit" % "2.0.1" % "test"
+    val akkaActor = "com.typesafe.akka" % "akka-actor" % "2.0.2"
+    val akkaTestkit = "com.typesafe.akka" % "akka-testkit" % "2.0.2" % "test"
 
     val commonsFileupload = "commons-fileupload" % "commons-fileupload" % "1.2.1"
     val commonsIo = "commons-io" % "commons-io" % "2.1"
     val commonsLang3 = "org.apache.commons" % "commons-lang3" % "3.1"
 
-    val dispatch = "net.databinder" %% "dispatch-http" % "0.8.5"
+    val dispatch = "net.databinder" %% "dispatch-http" % "0.8.7"
 
     def grizzledSlf4j = "org.clapper" %% "grizzled-slf4j" % "0.6.6"
 
@@ -227,6 +237,10 @@ object ScalatraBuild extends Build {
     val jettyServer = jettyDep("jetty-server") 
     val jettyWebsocket = "org.eclipse.jetty" % "jetty-websocket" % "8.1.3.v20120416"  % "provided" exclude("org.eclipse.jetty.orbit", "javax.servlet")
     val jettyWebapp = jettyDep("jetty-webapp") % "test;container"
+
+    val netty = "io.netty" % "netty" % "3.5.0.Final"
+
+    val nettyExtension = "NettyExtension" % "NettyExtension" % "1.1.12"
 
     val junit = "junit" % "junit" % "4.10"
 
@@ -253,6 +267,7 @@ object ScalatraBuild extends Build {
   object Resolvers {
     val sonatypeNexusSnapshots = "Sonatype Nexus Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
     val sonatypeNexusStaging = "Sonatype Nexus Staging" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+    val goldenGate = "GoldenGate" at "http://openr66.free.fr/maven2"
   }
 
   lazy val manifestSetting = packageOptions <+= (name, version, organization) map {
