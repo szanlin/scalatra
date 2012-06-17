@@ -5,6 +5,7 @@ import javax.servlet.http.{HttpServletRequest, Part}
 import java.util.{HashMap => JHashMap, Map => JMap}
 import org.scalatra.ScalatraBase
 import java.io.File
+import javax.servlet.ServletException
 
 /** FileUploadSupport can be mixed into a [[org.scalatra.ScalatraFilter]]
   * or [[org.scalatra.ScalatraServlet]] to provide easy access to data

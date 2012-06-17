@@ -212,7 +212,7 @@ object ScalatraBuild extends Build {
   object Dependencies {
     def antiXml = "com.codecommit" %% "anti-xml" % "0.3"
 
-    val atmosphere = "org.atmosphere" % "atmosphere-runtime" % "0.7.2"
+    val atmosphere = "org.atmosphere" % "atmosphere-runtime" % "1.0.0.beta1"
 
     val base64 = "net.iharder" % "base64" % "2.3.8"
 
@@ -255,7 +255,7 @@ object ScalatraBuild extends Build {
 
     def specs = "org.scala-tools.testing" %% "specs" % "1.6.9"
 
-    def specs2 = "org.specs2" %% "specs2" % "1.9"
+    def specs2 = "org.specs2" %% "specs2" % "1.11"
 
     val servletApi = "javax.servlet" % "javax.servlet-api" % "3.0.1"
 
