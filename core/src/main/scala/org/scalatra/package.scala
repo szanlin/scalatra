@@ -1,5 +1,7 @@
 package org
 
+import scalatra.util.RicherString
+
 package object scalatra 
   extends Control // make halt and pass visible to helpers outside the DSL
 {
@@ -26,4 +28,6 @@ package object scalatra
   
   @deprecated("Use org.scalatra.servlet.ServletBase if you depend on the Servlet API, or org.scalatra.ScalatraBase if you don't.", "2.1.0")
   type ScalatraKernel = servlet.ServletBase
+
+  private[scalatra] implicit def string2richerstring(s: String) = new RicherString(s)
 }

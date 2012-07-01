@@ -7,7 +7,7 @@ import net.liftweb.json.JsonAST.JValue
 /**
  * Trait which renders Lift JValues as JSON.
  */
-trait JsonSupport extends ScalatraBase {
+trait JsonPSupport extends ScalatraBase {
 
   /**
    * If a request is made with a parameter in jsonpCallbackParameterNames it will

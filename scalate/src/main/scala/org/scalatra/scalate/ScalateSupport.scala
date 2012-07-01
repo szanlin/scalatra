@@ -1,7 +1,7 @@
 package org.scalatra
 package scalate
 
-import servlet.{ServletRequest, ServletResponse}
+import servlet.{ServletHttpRequest, ServletHttpResponse}
 
 import scala.collection.mutable
 import java.io.PrintWriter

@@ -9,22 +9,21 @@ import java.net.URI
 import javax.servlet.http.{HttpServletRequest, HttpServletRequestWrapper}
 import java.io.InputStream
 import util.{MultiMap, MultiMapHeadView}
-import util.RicherString._
 
-object ServletRequest {
-  def apply(req: HttpServletRequest) = new ServletRequest(req)
+object ServletHttpRequest {
+  def apply(req: HttpServletRequest) = new ServletHttpRequest(req)
   private val cachedBodyKey = "org.scalatra.RichRequest.cachedBody"
 }
 
 /**
  * Extension methods to a standard HttpServletRequest.
  */
-class ServletRequest(r: HttpServletRequest) 
+class ServletHttpRequest(r: HttpServletRequest)
   extends HttpServletRequestWrapper(r)
-  with Request
+  with HttpRequest
   with AttributesMap
 {
-  import ServletRequest.cachedBodyKey
+  import ServletHttpRequest.cachedBodyKey
 
   def serverProtocol = r.getProtocol match {
     case "HTTP/1.1" => Http11

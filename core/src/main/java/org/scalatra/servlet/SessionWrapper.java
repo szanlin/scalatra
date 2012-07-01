@@ -5,10 +5,10 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 import java.util.Enumeration;
 
-public class SessionWrapper implements HttpSession {
-    private HttpSession session;
+public class SessionWrapper implements javax.servlet.http.HttpSession {
+    private javax.servlet.http.HttpSession session;
     
-    public SessionWrapper(HttpSession session) {
+    public SessionWrapper(javax.servlet.http.HttpSession session) {
         this.session = session;
     }
 

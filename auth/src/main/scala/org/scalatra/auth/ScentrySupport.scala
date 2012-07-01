@@ -1,7 +1,7 @@
 package org.scalatra
 package auth
 
-import servlet.{ServletBase, ServletRequest, ServletResponse}
+import servlet.{ServletBase, ServletHttpRequest, ServletHttpResponse}
 
 import javax.servlet.{FilterConfig, ServletConfig}
 import scala.util.DynamicVariable

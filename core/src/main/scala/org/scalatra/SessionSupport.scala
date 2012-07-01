@@ -7,9 +7,9 @@ package org.scalatra
 trait SessionSupport {
   /**
    * The type of session supported by this handler.  Must be viewable as
-   * a [[org.scalatra.Request]].
+   * a [[org.scalatra.HttpRequest]].
    */
-  type SessionT <: Session
+  type SessionT <: HttpSession
 
   /**
    * The current session.  Creates a session if none exists.

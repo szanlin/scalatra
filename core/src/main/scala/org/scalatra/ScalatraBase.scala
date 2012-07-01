@@ -262,7 +262,7 @@ trait ScalatraBase extends CoreDsl with DynamicScope with Initializable
    */
   protected def renderPipeline: RenderPipeline = {
     case status: Int =>
-      response.status = ResponseStatus(status)
+      response.status = HttpResponseStatus(status)
     case bytes: Array[Byte] =>
       response.outputStream.write(bytes)
     case file: File =>
@@ -344,9 +344,9 @@ trait ScalatraBase extends CoreDsl with DynamicScope with Initializable
   protected def renderHaltException(e: HaltException) {
     e match {
       case HaltException(Some(status), Some(reason), _, _) =>
-        response.status = ResponseStatus(status, reason)
+        response.status = HttpResponseStatus(status, reason)
       case HaltException(Some(status), None, _, _) =>
-        response.status = ResponseStatus(status)
+        response.status = HttpResponseStatus(status)
       case HaltException(None, _, _, _) => // leave status line alone
     }
     e.headers foreach { case(name, value) => response.addHeader(name, value) }

@@ -63,7 +63,7 @@ trait CoreDsl extends Handler with Control {
   /**
    * Sets the status code of the current response.
    */
-  def status_=(code: Int) { response.status = ResponseStatus(code) }
+  def status_=(code: Int) { response.status = HttpResponseStatus(code) }
 
   /**
    * Gets the status code of the current response.

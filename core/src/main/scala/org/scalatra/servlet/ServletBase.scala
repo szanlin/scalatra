@@ -18,7 +18,7 @@ trait ServletBase
   with SessionSupport 
   with Initializable
 {
-  type SessionT = ServletSession
+  type SessionT = ServletHttpSession
   type ApplicationContextT = ServletApplicationContext
   type ConfigT <: {
     def getServletContext(): ServletContext
@@ -39,15 +39,15 @@ trait ServletBase
     }
   }
 
-  override implicit def session: SessionT = ServletSession(request.getSession)
+  override implicit def session: SessionT = ServletHttpSession(request.getSession)
 
   override implicit def sessionOption: Option[SessionT] =
-    Option(request.getSession(false)) map ServletSession.apply
+    Option(request.getSession(false)) map ServletHttpSession.apply
 
   override def addSessionId(uri: String) = response.encodeURL(uri)
 
   protected def requestWithMethod(req: RequestT, m: HttpMethod) =
-    new ServletRequest(req) {
+    new ServletHttpRequest(req) {
       override def getMethod = m.toString.toUpperCase(Locale.ENGLISH)
     }
 
@@ -62,7 +62,7 @@ trait ServletBase
 
   @deprecated("Use handle(ServletRequest, ServletResponse)", "2.1.0")
   def handle(req: HttpServletRequest, res: HttpServletResponse) {
-    handle(ServletRequest(req), ServletResponse(res))
+    handle(ServletHttpRequest(req), ServletHttpResponse(res))
   }
 
   /**
@@ -70,10 +70,10 @@ trait ServletBase
    * request abstraction.
    */
   @deprecated("Remove references to HttpServletRequest from Scalatra apps", "2.1.0")
-  protected implicit def ensureServletRequest(request: HttpServletRequest): ServletRequest =
+  protected implicit def ensureServletRequest(request: HttpServletRequest): ServletHttpRequest =
     request match {
-      case r: ServletRequest => r
-      case _ => ServletRequest(request)
+      case r: ServletHttpRequest => r
+      case _ => ServletHttpRequest(request)
     }
 
   /**
@@ -81,9 +81,9 @@ trait ServletBase
    * response abstraction.
    */
   @deprecated("Remove references to HttpServletResponse from Scalatra apps", "2.1.0")
-  protected implicit def ensureServletResponse(response: HttpServletResponse): ServletResponse =
+  protected implicit def ensureServletResponse(response: HttpServletResponse): ServletHttpResponse =
     request match {
-      case r: ServletResponse => r
-      case _ => ServletResponse(response)
+      case r: ServletHttpResponse => r
+      case _ => ServletHttpResponse(response)
     }
 }

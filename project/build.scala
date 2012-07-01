@@ -138,7 +138,7 @@ object ScalatraBuild extends Build {
       libraryDependencies ++= Seq(
         grizzledSlf4j,
         testJettyServlet,
-	servletApi % "provided",
+	      servletApi % "provided",
         mockitoAll,
         commonsLang3,
         specs2 % "test",

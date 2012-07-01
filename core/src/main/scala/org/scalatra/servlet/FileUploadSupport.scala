@@ -3,7 +3,7 @@ package org.scalatra.servlet
 import scala.collection.JavaConversions._
 import javax.servlet.http.{HttpServletRequest, Part}
 import java.util.{HashMap => JHashMap, Map => JMap}
-import org.scalatra.ScalatraBase
+import org.scalatra.{HttpFile, ScalatraBase}
 import java.io.File
 import javax.servlet.ServletException
 
@@ -153,7 +153,7 @@ trait FileUploadSupport extends ServletBase {
   }
 
   private def wrapRequest(req: HttpServletRequest, formMap: Map[String, Seq[String]]) = {
-    val wrapped = new ServletRequest(req) {
+    val wrapped = new ServletHttpRequest(req) {
       override def getParameter(name: String) = formMap.get(name) map {
         _.head
       } getOrElse null
@@ -228,7 +228,7 @@ object FileMultiParams {
     new FileMultiParams(wrapped)
 }
 
-case class FileItem(part: Part) {
+case class FileItem(part: Part) extends HttpFile {
   val size = part.getSize
   val fieldName = part.getName
   val name = Util.partAttribute(part, "content-disposition", "filename")

@@ -3,11 +3,12 @@ package org.scalatra
 import java.io.{OutputStream, PrintWriter}
 import scala.collection.mutable.Map
 
-trait Response extends HttpMessage {
+trait HttpResponse extends HttpMessage {
   /**
    * The HTTP status code and reason phrase.
    */
-  var status: ResponseStatus
+  def status: HttpResponseStatus
+  def status_=(newStatus: HttpResponseStatus)
 
   def headers: Map[String, String]
 

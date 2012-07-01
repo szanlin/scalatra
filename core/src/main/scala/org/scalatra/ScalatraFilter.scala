@@ -1,6 +1,6 @@
 package org.scalatra
 
-import servlet.{ ServletBase, ServletRequest, ServletResponse }
+import servlet.{ ServletBase, ServletHttpRequest, ServletHttpResponse }
 import scala.util.DynamicVariable
 import javax.servlet.http.{ HttpServletResponse, HttpServletRequest }
 import javax.servlet.{ ServletRequest => JServletRequest, ServletResponse => JServletResponse, _ }
@@ -30,7 +30,7 @@ trait ScalatraFilter extends Filter with ServletBase {
     val httpResponse = response.asInstanceOf[HttpServletResponse]
 
     _filterChain.withValue(chain) {
-      handle(ServletRequest(httpRequest), ServletResponse(httpResponse))
+      handle(ServletHttpRequest(httpRequest), ServletHttpResponse(httpResponse))
     }
   }
 

@@ -10,7 +10,7 @@ import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
 
 class ServletRequestTest extends FunSuite with ShouldMatchers {
-  implicit def requestWrapper(r: HttpServletRequest) = ServletRequest(r)
+  implicit def requestWrapper(r: HttpServletRequest) = ServletHttpRequest(r)
 
   test("decodes body according to the character encoding") {
     val encoding = "ISO-8859-5"

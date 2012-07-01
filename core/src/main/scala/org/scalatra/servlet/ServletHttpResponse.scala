@@ -1,28 +1,26 @@
 package org.scalatra
 package servlet
 
-import util.RicherString._
-
 import java.io.{OutputStream, PrintWriter}
 import javax.servlet.http.{HttpServletResponse, HttpServletResponseWrapper, Cookie => ServletCookie}
 import scala.collection.JavaConversions._
 import scala.collection.mutable.Map
 
-object ServletResponse {
-  def apply(response: HttpServletResponse) = new ServletResponse(response)
+object ServletHttpResponse {
+  def apply(response: HttpServletResponse) = new ServletHttpResponse(response)
 }
 
-class ServletResponse(res: HttpServletResponse) 
+class ServletHttpResponse(res: HttpServletResponse)
   extends HttpServletResponseWrapper(res)
-  with Response 
+  with HttpResponse
 {
   /**
    * Note: the servlet API doesn't remember the reason.  If a custom
    * reason was set, it will be returned incorrectly here,
    */
-  def status: ResponseStatus = ResponseStatus(res.getStatus)
+  def status: HttpResponseStatus = HttpResponseStatus(res.getStatus)
 
-  def status_=(statusLine: ResponseStatus) {
+  def status_=(statusLine: HttpResponseStatus) {
     res.setStatus(statusLine.code, statusLine.message)
   }
 
